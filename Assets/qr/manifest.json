@@ -1,0 +1,62 @@
+[
+  {
+    "id": "algodoneros",
+    "name": "Algodoneros",
+    "payload": "BASEHUB:TEAM:algodoneros",
+    "file": "Assets/qr/algodoneros.png"
+  },
+  {
+    "id": "tecos",
+    "name": "Tecos",
+    "payload": "BASEHUB:TEAM:tecos",
+    "file": "Assets/qr/tecos.png"
+  },
+  {
+    "id": "acereros",
+    "name": "Acereros",
+    "payload": "BASEHUB:TEAM:acereros",
+    "file": "Assets/qr/acereros.png"
+  },
+  {
+    "id": "caliente",
+    "name": "Caliente",
+    "payload": "BASEHUB:TEAM:caliente",
+    "file": "Assets/qr/caliente.png"
+  },
+  {
+    "id": "charros",
+    "name": "Charros",
+    "payload": "BASEHUB:TEAM:charros",
+    "file": "Assets/qr/charros.png"
+  },
+  {
+    "id": "rieleros",
+    "name": "Rieleros",
+    "payload": "BASEHUB:TEAM:rieleros",
+    "file": "Assets/qr/rieleros.png"
+  },
+  {
+    "id": "saraperos",
+    "name": "Saraperos",
+    "payload": "BASEHUB:TEAM:saraperos",
+    "file": "Assets/qr/saraperos.png"
+  },
+  {
+    "id": "sultanes",
+    "name": "Sultanes",
+    "payload": "BASEHUB:TEAM:sultanes",
+    "file": "Assets/qr/sultanes.png"
+  },
+  {
+    "id": "toros",
+    "name": "Toros",
+    "payload": "BASEHUB:TEAM:toros",
+    "file": "Assets/qr/toros.png"
+  },
+  {
+    "id": "dorados",
+    "name": "Dorados",
+    "payload": "BASEHUB:TEAM:dorados",
+    "file": "Assets/qr/dorados.png"
+  }
+]

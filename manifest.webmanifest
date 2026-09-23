@@ -1,0 +1,17 @@
+{
+  "name": "Base-Hub | Liga Mexicana de Béisbol",
+  "short_name": "Base-Hub",
+  "description": "Noticias, equipos, calendario, trivia y Realidad Aumentada de la Zona Norte de la Liga Mexicana de Béisbol.",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "lang": "es-MX",
+  "icons": [
+    { "src": "Assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "Assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "Assets/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

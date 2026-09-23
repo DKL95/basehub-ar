@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Base-Hub | Liga Mexicana de Béisbol (Zona Norte)</title>
+<link rel="stylesheet" href="style.css" />
+
+<!-- PWA: permite "Agregar a pantalla de inicio" en el teléfono -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#111111" />
+<link rel="apple-touch-icon" href="Assets/icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="Base-Hub" />
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar"></div>
+
+  <div class="topbar">
+    <button class="icon-btn" id="menuBtn" aria-label="Menú">☰</button>
+    <div class="brand">BASE-HUB</div>
+    <button class="ar-pill" data-nav="ar-select">AR</button>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head">⚾ Base-Hub</div>
+    <nav id="drawerNav">
+      <a data-nav="home">Inicio</a>
+      <a data-nav="quienes">¿Quiénes somos?</a>
+      <a data-nav="historia">Historia del beisbol</a>
+      <a data-nav="equipos">Equipos</a>
+      <a data-nav="calendario">Calendario</a>
+      <a data-nav="trivia">Trivia</a>
+      <a data-nav="galeria">Galería de videos</a>
+      <a data-nav="ar-select">Realidad Aumentada</a>
+    </nav>
+  </div>
+
+  <div class="screens" id="screens">
+
+    <!-- HOME -->
+    <section class="screen" data-screen="home">
+      <div class="hero-logo-wrap">
+        <img class="hero-logo-img" src="Assets/Logo%20Basehub.png" alt="Base-Hub" />
+      </div>
+      <p class="hero-sub">Mantente al tanto de las últimas noticias en la liga de béisbol mexicana (Zona Norte). ¡Ahora con experiencia de Realidad Aumentada! (AR)</p>
+      <div class="hero-cta"><button class="btn" data-nav="ar-select">Ir a Realidad Aumentada</button></div>
+
+      <div class="feature-img" id="featurePortada"></div>
+
+      <h2 class="section-title pad-h">Noticias</h2>
+      <div class="news-carousel" id="newsCarousel"></div>
+      <div class="carousel-dots" id="newsDots"></div>
+
+      <h2 class="section-title pad-h">¿Quiénes somos?</h2>
+      <div class="about-preview">
+        <div class="txt">
+          <p>Base-hub es un sitio especialmente diseñado para que puedas acceder a toda la información relevante respecto a la liga mexicana de beisbol (zona norte).</p>
+          <b style="font-size:12.5px;">Encontrarás:</b>
+          <ul>
+            <li>Noticias actualizadas a diario</li>
+            <li>Calendario de juegos</li>
+            <li>Estadísticas de jugadores</li>
+            <li>Trivias y juegos</li>
+            <li>Experiencia de Realidad Aumentada</li>
+          </ul>
+          <button class="btn" data-nav="quienes">Leer más</button>
+        </div>
+        <div class="imgbox" style="background-image:url('Assets/anexo.jpg');"></div>
+      </div>
+
+      <h2 class="section-title pad-h">Equipos</h2>
+      <div class="team-grid" id="teamGridHome"></div>
+
+      <div class="calendar-preview">
+        <div class="emoji">📅</div>
+        <div style="flex:1">
+          <b style="font-size:14px;">No te pierdas ningún partido de la Zona Norte</b>
+          <div style="margin-top:8px;"><button class="btn" data-nav="calendario">Ir al calendario de partidos</button></div>
+        </div>
+      </div>
+
+      <h2 class="section-title pad-h">Lo que dicen los fans</h2>
+      <div class="testimonials" id="testimonials"></div>
+
+      <div id="footerHome"></div>
+    </section>
+
+    <!-- HISTORIA -->
+    <section class="screen" data-screen="historia">
+      <div class="history-title">
+        <div class="cursive">Historia del</div>
+        <div class="bold-red">beisbol ⚾</div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div id="footerHistoria"></div>
+    </section>
+
+    <!-- QUIENES SOMOS -->
+    <section class="screen" data-screen="quienes">
+      <div class="pad" style="padding-bottom:0;"><h1 class="page-title">Acerca de nosotros</h1></div>
+      <div class="about-hero-img" style="background-image:url('Assets/quienes%20somos.jpg');"></div>
+      <div id="faqList"></div>
+      <div class="about-hero-img" style="background-image:url('Assets/anexo2.jpg');"></div>
+      <div id="footerQuienes"></div>
+    </section>
+
+    <!-- EQUIPOS -->
+    <section class="screen" data-screen="equipos">
+      <div class="pad" style="padding-bottom:0;"><h1 class="page-title">Equipos</h1><p class="lead">Toda la información de los equipos de la Zona Norte.</p></div>
+      <div id="teamList"></div>
+      <div id="footerEquipos"></div>
+    </section>
+
+    <!-- JUGADORES / ROSTER -->
+    <section class="screen" data-screen="jugadores">
+      <div class="roster-head">
+        <button class="back" data-nav="equipos">↩</button>
+        <h1 class="page-title" style="margin:0;">Selecciona un equipo</h1>
+      </div>
+      <div class="roster-team-pick" id="rosterPick"></div>
+      <div id="rosterList"></div>
+      <div id="footerJugadores"></div>
+    </section>
+
+    <!-- CALENDARIO -->
+    <section class="screen" data-screen="calendario">
+      <div class="pad" style="padding-bottom:0;">
+        <h1 class="page-title">Próximos partidos</h1>
+      </div>
+      <div id="scheduleDay"></div>
+      <div class="day-nav">
+        <button id="prevDay">‹</button>
+        <span id="dayIndicator" style="align-self:center;margin:0 12px;font-size:12px;color:#666;"></span>
+        <button id="nextDay">›</button>
+      </div>
+      <div class="newsletter-box">
+        <h4>No te pierdas ningún partido</h4>
+        <p>Vuélvete miembro para recibir notificaciones. ¡Solo necesitamos tu correo electrónico!</p>
+        <input type="email" placeholder="Introduce tu correo" id="newsletterEmail" />
+        <button class="btn dark block" id="newsletterBtn">Vuélvete miembro</button>
+      </div>
+      <div id="footerCalendario"></div>
+    </section>
+
+    <!-- TRIVIA -->
+    <section class="screen" data-screen="trivia">
+      <div class="pad" style="padding-bottom:0;"><h1 class="page-title">Trivia Base-Hub</h1></div>
+      <div id="triviaBody"></div>
+      <div id="footerTrivia"></div>
+    </section>
+
+    <!-- GALERIA -->
+    <section class="screen" data-screen="galeria">
+      <div class="pad" style="padding-bottom:0;">
+        <h1 class="page-title">Galería de videos</h1>
+        <p class="lead">Toca un video para verlo y aplicarle filtros de procesamiento de imagen en vivo.</p>
+      </div>
+      <h2 class="section-title pad-h">Videos informativos</h2>
+      <div class="video-grid" id="videoGridInfo"></div>
+      <h2 class="section-title pad-h">Videos de la liga</h2>
+      <div class="video-grid" id="videoGridLiga"></div>
+      <div id="footerGaleria"></div>
+    </section>
+
+    <!-- VIDEO PLAYER + FILTROS -->
+    <section class="screen" data-screen="player">
+      <div class="roster-head">
+        <button class="back" data-nav="galeria">↩</button>
+        <h1 class="page-title" style="margin:0;font-size:15px;" id="playerTitle">Video</h1>
+      </div>
+      <p class="lead" style="padding:0 16px;margin:-6px 0 8px;">Demo de filtros de imagen en vivo (pixelaje y desenfoque). El video real está en YouTube.</p>
+      <div style="padding:0 16px 6px;"><a class="btn ghost block" id="playerYtLink" target="_blank" rel="noopener">▶ Ver video real en YouTube</a></div>
+      <div class="player-view">
+        <div class="canvas-wrap">
+          <canvas id="videoCanvas" width="360" height="640"></canvas>
+        </div>
+        <div class="filter-controls">
+          <button class="btn ghost active" data-filter="none">Original</button>
+          <button class="btn ghost" data-filter="pixelate">Filtro de pixelaje</button>
+          <button class="btn ghost" data-filter="blur">Filtro desenfoque</button>
+        </div>
+        <div class="slider-row" id="filterSliderRow" style="display:none;">
+          <label id="filterSliderLabel">Intensidad</label>
+          <input type="range" id="filterSlider" min="1" max="30" value="10" />
+        </div>
+      </div>
+    </section>
+
+    <!-- AR: SELECCIONA EQUIPO -->
+    <section class="screen" data-screen="ar-select">
+      <div class="pad" style="padding-bottom:0;">
+        <h1 class="page-title">Escanea un código QR</h1>
+        <p class="lead">Apunta la cámara al código QR de un equipo para ver su experiencia de Realidad Aumentada en 3D.</p>
+      </div>
+      <h3 class="qr-grid-title">Códigos QR de equipos</h3>
+      <p class="qr-grid-note">Tócalos para ampliarlos — sirven para escanearlos con la cámara de otro dispositivo.</p>
+      <div class="qr-grid" id="arQrGrid"></div>
+      <div class="ar-ready">
+        <div class="scan-icon">▣</div>
+        <h3>¿Listo para escanear?</h3>
+        <p>Toca "Escanea Ahora" para permitir al sitio acceder a la cámara y activar la experiencia de Realidad Aumentada.</p>
+        <button class="btn" data-nav="ar-scan">Escanea Ahora</button>
+      </div>
+    </section>
+
+    <!-- AR: ESCANEO -->
+    <section class="screen" data-screen="ar-scan">
+      <div class="roster-head">
+        <button class="back" data-nav="ar-select">↩</button>
+        <h1 class="page-title" style="margin:0;">Escaneo</h1>
+      </div>
+      <div class="ar-cam" id="arCam">
+        <video id="arVideo" playsinline muted></video>
+        <canvas id="arScanCanvas" hidden></canvas>
+        <div class="scan-reticle"></div>
+        <div class="scan-status" id="arScanStatus">Iniciando cámara…</div>
+      </div>
+      <div class="ar-fallback">
+        <p>¿Sin cámara disponible? Sube una foto del código QR.</p>
+        <label class="btn ghost file-btn">
+          Subir foto
+          <input type="file" id="arFileInput" accept="image/*" capture="environment" hidden />
+        </label>
+      </div>
+    </section>
+
+    <!-- AR: RESULTADO -->
+    <section class="screen" data-screen="ar-result">
+      <div class="roster-head">
+        <button class="back" data-nav="ar-select">↩</button>
+        <h1 class="page-title" style="margin:0;">Experiencia AR</h1>
+      </div>
+      <div class="ar-result" id="arResultBody"></div>
+    </section>
+
+  </div>
+
+  <div class="tabbar" id="tabbar">
+    <button data-nav="home"><span class="ic">🏠</span>Inicio</button>
+    <button data-nav="equipos"><span class="ic">⚾</span>Equipos</button>
+    <button data-nav="calendario"><span class="ic">📅</span>Calendario</button>
+    <button data-nav="trivia"><span class="ic">❓</span>Trivia</button>
+    <button data-nav="ar-select"><span class="ic">📷</span>AR</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="qr-lightbox" id="qrLightbox">
+    <div class="qr-lightbox-inner">
+      <img id="qrLightboxImg" src="" alt="" />
+      <div class="qr-lightbox-name" id="qrLightboxName"></div>
+      <button class="btn ghost" id="qrLightboxClose">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lector de QR (jsQR) y motor 3D (three.js) para la experiencia AR -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="data.js"></script>
+<script src="filters.js"></script>
+<script src="ar.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
