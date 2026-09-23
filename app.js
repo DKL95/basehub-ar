@@ -39,8 +39,7 @@ function footerHTML() {
 /* ---------------- NAV ---------------- */
 function goTo(screen) {
   const prevScreen = document.querySelector(".screen.active")?.dataset.screen;
-  if (prevScreen === "ar-scan" && screen !== "ar-scan") Ar.leaveScan();
-  if (prevScreen === "ar-result" && screen !== "ar-result") Ar.leaveResult();
+  if (prevScreen === "ar-live" && screen !== "ar-live") Ar.leaveLive();
 
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   const target = document.querySelector(`.screen[data-screen="${screen}"]`);
@@ -56,8 +55,7 @@ function goTo(screen) {
   if (screen === "calendario") renderCalendario();
   if (screen === "trivia") renderTrivia(true);
   if (screen === "ar-select") Ar.renderQrGrid();
-  if (screen === "ar-scan") Ar.enterScan();
-  if (screen === "ar-result") Ar.renderResult(state.currentTeam);
+  if (screen === "ar-live") Ar.enterLive();
   if (screen !== "player") VideoFilters.stop();
 }
 

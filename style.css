@@ -433,34 +433,51 @@ table.games td.time { color: #666; }
   position: relative; margin: 0 16px; border-radius: var(--radius); overflow: hidden;
   height: 460px; background: #000;
 }
-.ar-cam #arVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.ar-cam #arVideo, .ar-cam #arStillImg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000;
+}
+/* Canvas 3D transpuesto exactamente sobre el video: aquí "vive" el modelo
+   que se ancla a la posición del QR detectado en la imagen. */
+.ar-cam #arStage3d { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .ar-cam .scan-reticle {
   position: absolute; inset: 60px 34px 90px; border: 3px solid #fff; border-radius: 18px;
-  box-shadow: 0 0 0 999px rgba(0,0,0,.28); pointer-events: none;
+  box-shadow: 0 0 0 999px rgba(0,0,0,.28); pointer-events: none; transition: opacity .25s;
 }
 .ar-cam.error .scan-reticle { border-color: #ff5a5a; }
+.ar-cam.found .scan-reticle { opacity: 0; }
 .ar-cam .scan-status {
   position: absolute; left: 0; right: 0; bottom: 16px; text-align: center;
   color: #fff; font-weight: 700; font-size: 12.5px; line-height: 1.4;
-  text-shadow: 0 1px 3px rgba(0,0,0,.85); padding: 0 22px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.85); padding: 0 22px; transition: opacity .25s;
 }
 .ar-cam.error .scan-status { color: #ffc0c0; }
+.ar-cam.found .scan-status { opacity: 0; }
+.ar-cam .glow-player {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) perspective(400px) rotateY(0);
+  width: 140px; height: 140px; object-fit: contain; border-radius: 16px; background: #fff; padding: 10px;
+  animation: spin3d 3.5s linear infinite; filter: drop-shadow(0 0 16px #fff8);
+}
+@keyframes spin3d { from{ transform: translate(-50%,-50%) perspective(400px) rotateY(0);} to{ transform: translate(-50%,-50%) perspective(400px) rotateY(360deg);} }
+
+/* Tarjeta con la info del equipo, flotando sobre la cámara una vez detectado */
+.ar-info-card {
+  position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 5;
+  background: rgba(10,10,10,.72); backdrop-filter: blur(6px); border-radius: 12px;
+  padding: 10px 12px; color: #fff;
+}
+.ar-info-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ar-info-head b { font-size: 14.5px; }
+.ar-info-head span { font-size: 10.5px; color: #ccc; }
+.ar-info-stats { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.ar-info-stats .stat-chip { background: rgba(255,255,255,.12); color: #fff; border-radius: 6px; padding: 4px 8px; font-size: 10px; }
+.ar-info-stats .stat-chip b { display: block; font-size: 13px; color: var(--green); }
+.ar-info-actions { display: flex; gap: 8px; margin-top: 8px; }
+.ar-info-actions .btn.sm { flex: 1; padding: 8px 10px; font-size: 11.5px; }
+.ar-info-actions .btn.ghost { background: rgba(255,255,255,.08); border-color: #fff; color: #fff; }
 
 .ar-fallback { padding: 14px 20px 4px; text-align: center; }
 .ar-fallback p { font-size: 11.5px; color: var(--muted); margin: 0 0 8px; }
 .file-btn { display: inline-block; cursor: pointer; }
-
-.ar-result { padding: 18px 16px; text-align: center; }
-.ar-result .stage {
-  height: 260px; border-radius: var(--radius); margin: 10px 0 16px;
-  display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
-}
-.ar-result .stage canvas { width: 100%; height: 100%; display: block; }
-.ar-result .stage .glow-player { width: 140px; height: 140px; object-fit: contain; border-radius: 16px; background: #fff; padding: 10px; animation: spin3d 3.5s linear infinite; filter: drop-shadow(0 0 16px #fff8); }
-@keyframes spin3d { from{ transform: perspective(400px) rotateY(0);} to{ transform: perspective(400px) rotateY(360deg);} }
-.ar-result .stat-strip { display: flex; justify-content: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
-.ar-result .stat-chip { background: #111; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 11.5px; min-width: 64px; }
-.ar-result .stat-chip b { display: block; font-size: 15px; color: var(--green); }
 
 /* Bottom tab bar */
 .tabbar {

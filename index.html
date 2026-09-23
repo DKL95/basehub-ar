@@ -204,21 +204,34 @@
         <div class="scan-icon">▣</div>
         <h3>¿Listo para escanear?</h3>
         <p>Toca "Escanea Ahora" para permitir al sitio acceder a la cámara y activar la experiencia de Realidad Aumentada.</p>
-        <button class="btn" data-nav="ar-scan">Escanea Ahora</button>
+        <button class="btn" data-nav="ar-live">Escanea Ahora</button>
       </div>
     </section>
 
-    <!-- AR: ESCANEO -->
-    <section class="screen" data-screen="ar-scan">
+    <!-- AR: CÁMARA EN VIVO + MODELO 3D ANCLADO AL QR -->
+    <section class="screen" data-screen="ar-live">
       <div class="roster-head">
         <button class="back" data-nav="ar-select">↩</button>
-        <h1 class="page-title" style="margin:0;">Escaneo</h1>
+        <h1 class="page-title" style="margin:0;">Realidad Aumentada</h1>
       </div>
       <div class="ar-cam" id="arCam">
-        <video id="arVideo" playsinline muted></video>
+        <video id="arVideo" playsinline muted autoplay></video>
+        <img id="arStillImg" alt="" hidden />
         <canvas id="arScanCanvas" hidden></canvas>
-        <div class="scan-reticle"></div>
+        <canvas id="arStage3d"></canvas>
+        <div class="scan-reticle" id="arReticle"></div>
         <div class="scan-status" id="arScanStatus">Iniciando cámara…</div>
+        <div class="ar-info-card" id="arInfoCard" hidden>
+          <div class="ar-info-head">
+            <b id="arInfoName"></b>
+            <span id="arInfoSub"></span>
+          </div>
+          <div class="ar-info-stats" id="arInfoStats"></div>
+          <div class="ar-info-actions">
+            <button class="btn ghost sm" id="arRescanBtn" type="button">Escanear otro</button>
+            <button class="btn sm" data-nav="jugadores">Ver plantilla</button>
+          </div>
+        </div>
       </div>
       <div class="ar-fallback">
         <p>¿Sin cámara disponible? Sube una foto del código QR.</p>
@@ -227,15 +240,6 @@
           <input type="file" id="arFileInput" accept="image/*" capture="environment" hidden />
         </label>
       </div>
-    </section>
-
-    <!-- AR: RESULTADO -->
-    <section class="screen" data-screen="ar-result">
-      <div class="roster-head">
-        <button class="back" data-nav="ar-select">↩</button>
-        <h1 class="page-title" style="margin:0;">Experiencia AR</h1>
-      </div>
-      <div class="ar-result" id="arResultBody"></div>
     </section>
 
   </div>
