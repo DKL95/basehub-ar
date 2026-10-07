@@ -158,7 +158,7 @@
     <section class="screen" data-screen="galeria">
       <div class="pad" style="padding-bottom:0;">
         <h1 class="page-title">Galería de videos</h1>
-        <p class="lead">Toca un video para verlo y aplicarle filtros de procesamiento de imagen en vivo.</p>
+        <p class="lead">Toca un video para verlo aquí mismo y aplicarle filtros de procesamiento de imagen en vivo.</p>
       </div>
       <h2 class="section-title pad-h">Videos informativos</h2>
       <div class="video-grid" id="videoGridInfo"></div>
@@ -173,12 +173,14 @@
         <button class="back" data-nav="galeria">↩</button>
         <h1 class="page-title" style="margin:0;font-size:15px;" id="playerTitle">Video</h1>
       </div>
-      <p class="lead" style="padding:0 16px;margin:-6px 0 8px;" id="playerNote">Elige un filtro y ajústalo en vivo. Mantén presionado el video para comparar con el original.</p>
+      <p class="lead" style="padding:0 16px;margin:-6px 0 8px;" id="playerNote"></p>
       <div class="player-view">
         <div class="canvas-wrap" id="canvasWrap">
           <canvas id="videoCanvas" width="360" height="640"></canvas>
+          <div class="yt-frame" id="ytFrame" hidden></div>
           <span class="filter-badge" id="filterBadge">Original</span>
           <button class="play-toggle" id="playToggle" type="button" aria-label="Pausar">❚❚</button>
+          <button class="compare-btn" id="compareBtn" type="button">👁 Original</button>
         </div>
         <div class="filter-controls" id="filterControls"></div>
         <div id="filterSliders"></div>

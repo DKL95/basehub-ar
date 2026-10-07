@@ -13,7 +13,7 @@ const FILTERS = [
   { id: "color",    label: "Ajuste de color",   controls: [
       { key: "hue", label: "Tono", min: -180, max: 180, value: 40, unit: "°" },
       { key: "sat", label: "Saturación", min: 0, max: 200, value: 120, unit: "%" },
-      { key: "temp", label: "Temperatura (frío ↔ cálido)", min: -60, max: 60, value: 0 },
+      { key: "temp", label: "Temperatura (frío ↔ cálido)", min: -60, max: 60, value: 0, pixelsOnly: true },
     ] },
   { id: "pastel",   label: "Colores pastel",    controls: [{ key: "amount", label: "Intensidad pastel", min: 0, max: 100, value: 60, unit: "%" }] },
   { id: "vivid",    label: "Alta saturación",   controls: [{ key: "amount", label: "Saturación extra", min: 0, max: 200, value: 120, unit: "%" }] },
@@ -343,4 +343,35 @@ const VideoFilters = (() => {
   }
 
   return { init, stop, setMode, setParam, setShowOriginal, togglePlay, hasVideo: () => !!video };
+})();
+
+// Filtros para videos de YouTube. El navegador no deja leer ni recombinar
+// los píxeles de un reproductor de otro sitio: bloquea incluso los filtros
+// SVG sobre él. Solo permite las funciones CSS básicas (desenfoque, tono,
+// saturación, contraste, opacidad), así que aquí cada filtro se arma con esas
+// funciones y los que necesitan los píxeles (térmica, pixelado, suavizado)
+// quedan disponibles solo para videos propios.
+const EmbedFilters = (() => {
+  const SUPPORTED = new Set(["none", "blur", "color", "pastel", "vivid"]);
+
+  // Devuelve el valor CSS `filter` y el color de fondo del contenedor (el
+  // pastel mezcla el video con un tono crema bajando su opacidad).
+  function css(mode, p) {
+    switch (mode) {
+      case "blur":
+        return { filter: `blur(${p.radius * 0.6}px)`, bg: "#000" };
+      case "color":
+        return { filter: `hue-rotate(${p.hue}deg) saturate(${p.sat}%)`, bg: "#000" };
+      case "pastel": {
+        const k = p.amount / 100;
+        return { filter: `saturate(${1 - 0.45 * k}) opacity(${1 - 0.42 * k})`, bg: "#fff4fa" };
+      }
+      case "vivid":
+        return { filter: `saturate(${1 + p.amount / 100}) contrast(1.12)`, bg: "#000" };
+      default:
+        return { filter: "none", bg: "#000" };
+    }
+  }
+
+  return { css, supports: (mode) => SUPPORTED.has(mode) };
 })();

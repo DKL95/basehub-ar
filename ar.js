@@ -87,6 +87,9 @@ const Ar = (() => {
 
       renderer = new THREE.WebGLRenderer({ canvas: canvasEl, alpha: true, antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // Fondo transparente explícito: renderer.clear() se llama antes del
+      // primer render() y, sin esto, pinta el canvas de negro encima del video.
+      renderer.setClearColor(0x000000, 0);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.15;

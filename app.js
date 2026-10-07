@@ -56,7 +56,7 @@ function goTo(screen) {
   if (screen === "trivia") renderTrivia(true);
   if (screen === "ar-select") Ar.renderTargetGrid();
   if (screen === "ar-live") Ar.enterLive();
-  if (screen !== "player") VideoFilters.stop();
+  if (screen !== "player") { VideoFilters.stop(); closeEmbed(); }
 }
 
 function openDrawer() { drawer.classList.add("open"); drawerBackdrop.classList.add("open"); }
@@ -310,13 +310,12 @@ function videoCardHTML(v, cat, idx) {
     ? `background-color:hsl(${v.hue},55%,32%);background-image:url('${thumb}');`
     : `background:hsl(${v.hue},55%,32%);`;
   return `
-    <div class="video-thumb" style="${bg}" data-yt="${v.youtube}">
+    <div class="video-thumb" style="${bg}" data-open-video="${cat}:${idx}">
       <span class="yt-badge">YouTube</span>
       <div class="play"><span>▶</span></div>
-      <button class="filter-fab" data-open-video="${cat}:${idx}" title="Probar filtros de imagen">🎛️</button>
     </div>
     <div class="video-title">${v.title}</div>
-    <div class="video-sub">Ver en YouTube · toca 🎛️ para filtros</div>`;
+    <div class="video-sub">Toca para verlo con filtros 🎛️</div>`;
 }
 function renderGaleria() {
   document.getElementById("videoGridInfo").innerHTML = VIDEOS.informativos.map((v, i) => `<div>${videoCardHTML(v, "informativos", i)}</div>`).join("");
@@ -324,21 +323,25 @@ function renderGaleria() {
   document.getElementById("footerGaleria").innerHTML = footerHTML();
 }
 screensEl.addEventListener("click", (e) => {
-  const fab = e.target.closest("[data-open-video]");
-  if (fab) {
-    e.stopPropagation();
-    const [cat, idx] = fab.dataset.openVideo.split(":");
-    openPlayer(VIDEOS[cat][Number(idx)]);
-    return;
-  }
-  const thumb = e.target.closest("[data-yt]");
-  if (thumb) {
-    window.open(thumb.dataset.yt, "_blank", "noopener");
-  }
+  const card = e.target.closest("[data-open-video]");
+  if (!card) return;
+  const [cat, idx] = card.dataset.openVideo.split(":");
+  openPlayer(VIDEOS[cat][Number(idx)]);
 });
 
 let ownVideoUrl = null;
 let currentFilter = FILTERS[0];
+let filterParams = {};
+let ytMode = false; // true: video de YouTube embebido (filtros SVG); false: canvas (filtros por píxel)
+
+const canvasWrap = document.getElementById("canvasWrap");
+const videoCanvas = document.getElementById("videoCanvas");
+const ytFrame = document.getElementById("ytFrame");
+
+function ytId(url) {
+  const m = (url || "").match(/[?&]v=([^&]+)/);
+  return m ? m[1] : null;
+}
 
 function openPlayer(video, src) {
   document.getElementById("playerTitle").textContent = video.title;
@@ -346,28 +349,78 @@ function openPlayer(video, src) {
   yt.hidden = !video.youtube;
   if (video.youtube) yt.href = video.youtube;
   goTo("player");
+
   const source = src || video.src || null;
-  document.getElementById("playerNote").textContent = source
-    ? "Elige un filtro y ajústalo en vivo. Mantén presionado el video para comparar con el original."
-    : "Este video aún no tiene archivo local: se muestra una escena de demostración. Usa “Usar mi propio video” para filtrar un clip real.";
-  VideoFilters.init(document.getElementById("videoCanvas"), video.hue, source);
-  document.getElementById("playToggle").hidden = !source;
+  const id = !source && ytId(video.youtube);
+  ytMode = !!id;
+  closeEmbed();
+  const note = document.getElementById("playerNote");
+
+  if (ytMode) {
+    VideoFilters.stop();
+    videoCanvas.hidden = true;
+    ytFrame.hidden = false;
+    canvasWrap.style.aspectRatio = "16 / 9";
+    // fs=0: sin pantalla completa, porque ahí el navegador ya no aplica los filtros.
+    ytFrame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?playsinline=1&rel=0&modestbranding=1&fs=0"
+      title="${video.title.replace(/"/g, "&quot;")}" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    note.textContent = "Dale ▶ al video y elige un filtro. Los filtros con 🔒 necesitan leer los píxeles y YouTube no lo permite: pruébalos con “Usar mi propio video”.";
+  } else {
+    videoCanvas.hidden = false;
+    ytFrame.hidden = true;
+    VideoFilters.init(videoCanvas, video.hue, source);
+    note.textContent = source
+      ? "Elige un filtro y ajústalo en vivo. Mantén presionado “Original” o el video para comparar."
+      : "Este video no tiene archivo ni YouTube: se muestra una escena de demostración.";
+  }
+  document.getElementById("playToggle").hidden = ytMode || !source;
   document.getElementById("playToggle").textContent = "❚❚";
+  renderFilterButtons();
   selectFilter("none");
 }
 
+// Quita el reproductor de YouTube (detiene el audio al salir de la pantalla).
+function closeEmbed() {
+  ytFrame.innerHTML = "";
+  ytFrame.style.background = "";
+}
+
+function applyFilter(showOriginal) {
+  if (ytMode) {
+    // El filtro va en el <iframe> y el color de fondo en su contenedor, para
+    // que la opacidad del pastel mezcle el video con ese fondo.
+    const { filter, bg } = EmbedFilters.css(showOriginal ? "none" : currentFilter.id, filterParams);
+    const iframe = ytFrame.querySelector("iframe");
+    if (iframe) iframe.style.filter = filter;
+    ytFrame.style.background = bg;
+  } else {
+    VideoFilters.setShowOriginal(!!showOriginal);
+  }
+  canvasWrap.classList.toggle("showing-original", !!showOriginal);
+}
+
+// En videos de YouTube los filtros que necesitan leer píxeles se muestran
+// bloqueados (ver EmbedFilters en filters.js).
+function filterAvailable(id) {
+  return !ytMode || EmbedFilters.supports(id);
+}
+
 function renderFilterButtons() {
-  document.getElementById("filterControls").innerHTML = FILTERS.map(f =>
-    `<button class="btn ghost" data-filter="${f.id}">${f.label}</button>`).join("");
+  document.getElementById("filterControls").innerHTML = FILTERS.map(f => filterAvailable(f.id)
+    ? `<button class="btn ghost" data-filter="${f.id}">${f.label}</button>`
+    : `<button class="btn ghost locked" data-filter="${f.id}" aria-disabled="true">🔒 ${f.label}</button>`).join("");
 }
 
 function selectFilter(id) {
   const f = currentFilter = FILTERS.find(x => x.id === id);
+  filterParams = {};
+  f.controls.forEach(c => { filterParams[c.key] = c.value; });
   VideoFilters.setMode(id);
+  applyFilter(false);
   document.querySelectorAll("#filterControls .btn").forEach(b => b.classList.toggle("active", b.dataset.filter === id));
   document.querySelector(`#filterControls [data-filter="${id}"]`)?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   document.getElementById("filterBadge").textContent = f.label;
-  document.getElementById("filterSliders").innerHTML = f.controls.map(c => `
+  document.getElementById("filterSliders").innerHTML = f.controls.filter(c => !(ytMode && c.pixelsOnly)).map(c => `
     <div class="slider-row">
       <label>${c.label} <b data-val="${c.key}">${c.value}${c.unit || ""}</b></label>
       <input type="range" data-param="${c.key}" min="${c.min}" max="${c.max}" value="${c.value}" />
@@ -378,6 +431,10 @@ renderFilterButtons();
 document.getElementById("filterControls").addEventListener("click", (e) => {
   const btn = e.target.closest("[data-filter]");
   if (!btn) return;
+  if (!filterAvailable(btn.dataset.filter)) {
+    toast("YouTube no deja procesar sus píxeles: usa tu propio video");
+    return;
+  }
   selectFilter(btn.dataset.filter);
   toast(`Filtro: ${btn.textContent}`);
 });
@@ -385,16 +442,18 @@ document.getElementById("filterSliders").addEventListener("input", (e) => {
   const key = e.target.dataset.param;
   if (!key) return;
   const c = currentFilter.controls.find(x => x.key === key);
-  VideoFilters.setParam(key, Number(e.target.value));
+  filterParams[key] = Number(e.target.value);
+  VideoFilters.setParam(key, filterParams[key]);
+  applyFilter(false);
   document.querySelector(`#filterSliders [data-val="${key}"]`).textContent = e.target.value + (c.unit || "");
 });
 
-// Mantener presionado el video muestra el cuadro original (comparación antes/después).
-const canvasWrap = document.getElementById("canvasWrap");
+// Comparación antes/después: mantener presionado "Original" (o el video, en
+// modo canvas; el reproductor de YouTube recibe sus propios toques).
 const holdOriginal = (on) => (e) => {
   if (e.target.closest("#playToggle")) return;
-  VideoFilters.setShowOriginal(on);
-  canvasWrap.classList.toggle("showing-original", on);
+  if (ytMode && !e.target.closest("#compareBtn")) return;
+  applyFilter(on);
 };
 canvasWrap.addEventListener("pointerdown", holdOriginal(true));
 ["pointerup", "pointerleave", "pointercancel"].forEach(ev => canvasWrap.addEventListener(ev, holdOriginal(false)));
