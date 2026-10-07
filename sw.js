@@ -1,10 +1,11 @@
 // Service worker mínimo para que Base-Hub se pueda "instalar" en el
 // teléfono (ícono en pantalla de inicio, se abre sin la barra del navegador)
 // y siga funcionando sin conexión una vez visitada cada pantalla.
-// No intercepta peticiones a otros orígenes (CDN de jsQR/three.js): esas
-// siempre van directo a la red.
+// No intercepta peticiones a otros orígenes: esas siempre van directo a la
+// red. Las librerías de AR (vendor/) y los logos se guardan en caché la
+// primera vez que se usan.
 
-const CACHE = "basehub-v1";
+const CACHE = "basehub-v3";
 const CORE_ASSETS = [
   "index.html",
   "style.css",
@@ -12,6 +13,7 @@ const CORE_ASSETS = [
   "ar.js",
   "data.js",
   "filters.js",
+  "ar-libs.js",
   "manifest.webmanifest",
 ];
 

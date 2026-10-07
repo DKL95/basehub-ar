@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Compilar logos AR</title>
+<style>
+  body { font-family: "Segoe UI", Roboto, Arial, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; color: #1c1c1c; }
+  button { background: #2ecc3e; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 800; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: progress; }
+  pre { background: #f4f4f4; padding: 12px; border-radius: 8px; white-space: pre-wrap; font-size: 12.5px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 12px 0; }
+  .grid figure { margin: 0; text-align: center; font-size: 11px; }
+  .grid img { width: 100%; border: 1px solid #ddd; border-radius: 6px; }
+  a.dl { display: inline-block; margin: 4px 8px 4px 0; }
+</style>
+</head>
+<body>
+<h1>Compilar logos para AR</h1>
+<p>
+  Genera las imágenes marcador (<code>Assets/targets/&lt;id&gt;.png</code>) y la huella
+  <code>targets.mind</code> que usa MindAR para reconocer los logos. Úsalo cuando cambies un
+  logo o agregues un equipo en <code>data.js</code>. Ábrelo desde el servidor local
+  (p. ej. <code>http://localhost:8000/tools/compilar-logos.html</code>), presiona
+  <b>Compilar</b> y guarda los archivos descargados en <code>Assets/targets/</code>.
+</p>
+<button id="go">Compilar</button>
+<div class="grid" id="grid"></div>
+<div id="downloads"></div>
+<pre id="log">Listo para compilar.</pre>
+
+<script src="../data.js"></script>
+<script type="module">
+import { Compiler } from "../vendor/mindar/mindar-image.prod.js";
+
+// Tamaño de las imágenes marcador: 800 px dio la mejor relación entre puntos
+// reconocibles y peso del archivo .mind.
+const SIZE = 800, PAD = 0.04;
+const logEl = document.getElementById("log");
+const log = (m) => { logEl.textContent += "\n" + m; };
+const load = (src) => new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => err(new Error("No se pudo cargar " + src)); i.src = src; });
+
+function link(name, href) {
+  const a = document.createElement("a");
+  a.className = "dl"; a.download = name; a.href = href; a.textContent = "⬇ " + name;
+  document.getElementById("downloads").appendChild(a);
+}
+
+document.getElementById("go").addEventListener("click", async (e) => {
+  e.target.disabled = true;
+  logEl.textContent = "Preparando logos…";
+  document.getElementById("grid").innerHTML = "";
+  document.getElementById("downloads").innerHTML = "";
+  try {
+    // Cada logo se centra sobre fondo blanco (así se imprime o se ve en pantalla).
+    const images = [];
+    for (const t of TEAMS) {
+      const logo = await load("../" + t.logo);
+      const c = document.createElement("canvas");
+      c.width = c.height = SIZE;
+      const g = c.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, SIZE, SIZE);
+      const s = (SIZE * (1 - 2 * PAD)) / Math.max(logo.naturalWidth, logo.naturalHeight);
+      const w = logo.naturalWidth * s, h = logo.naturalHeight * s;
+      g.imageSmoothingQuality = "high";
+      g.drawImage(logo, (SIZE - w) / 2, (SIZE - h) / 2, w, h);
+      const url = c.toDataURL("image/png");
+      images.push(await load(url));
+      document.getElementById("grid").insertAdjacentHTML("beforeend", `<figure><img src="${url}" alt=""><figcaption>${t.id}</figcaption></figure>`);
+      link(t.id + ".png", url);
+    }
+
+    log("Compilando " + images.length + " logos (puede tardar ~1 min)…");
+    const compiler = new Compiler();
+    let last = -1;
+    await compiler.compileImageTargets(images, (p) => {
+      const v = Math.floor(p / 10) * 10;
+      if (v !== last) { last = v; log("  " + v + "%"); }
+    });
+
+    // Puntos reconocibles por logo: con menos de ~60 en la primera escala el
+    // reconocimiento es poco confiable.
+    log("\nPuntos reconocibles (escala principal):");
+    compiler.data.forEach((d, i) => {
+      const k = d.matchingData[0];
+      const n = k.maximaPoints.length + k.minimaPoints.length;
+      log(`  ${TEAMS[i].id.padEnd(12)} ${String(n).padStart(4)}${n < 60 ? "  ← débil" : ""}`);
+    });
+
+    const blob = new Blob([compiler.exportData()], { type: "application/octet-stream" });
+    link("targets.mind", URL.createObjectURL(blob));
+    const order = new Blob([JSON.stringify(TEAMS.map(t => t.id)) + "\n"], { type: "application/json" });
+    link("targets.json", URL.createObjectURL(order));
+    log("\nListo. Descarga los archivos y cópialos a Assets/targets/.");
+  } catch (err) {
+    log("ERROR: " + err.message);
+  } finally {
+    e.target.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

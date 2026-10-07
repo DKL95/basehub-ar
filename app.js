@@ -54,7 +54,7 @@ function goTo(screen) {
   if (screen === "jugadores") renderRoster();
   if (screen === "calendario") renderCalendario();
   if (screen === "trivia") renderTrivia(true);
-  if (screen === "ar-select") Ar.renderQrGrid();
+  if (screen === "ar-select") Ar.renderTargetGrid();
   if (screen === "ar-live") Ar.enterLive();
   if (screen !== "player") VideoFilters.stop();
 }
@@ -337,41 +337,84 @@ screensEl.addEventListener("click", (e) => {
   }
 });
 
-function openPlayer(video) {
+let ownVideoUrl = null;
+let currentFilter = FILTERS[0];
+
+function openPlayer(video, src) {
   document.getElementById("playerTitle").textContent = video.title;
-  document.getElementById("playerYtLink").href = video.youtube;
+  const yt = document.getElementById("playerYtLink");
+  yt.hidden = !video.youtube;
+  if (video.youtube) yt.href = video.youtube;
   goTo("player");
-  const canvas = document.getElementById("videoCanvas");
-  VideoFilters.init(canvas, video.hue);
-  document.querySelectorAll(".filter-controls .btn").forEach(b => b.classList.remove("active"));
-  document.querySelector('.filter-controls .btn[data-filter="none"]').classList.add("active");
-  document.getElementById("filterSliderRow").style.display = "none";
+  const source = src || video.src || null;
+  document.getElementById("playerNote").textContent = source
+    ? "Elige un filtro y ajústalo en vivo. Mantén presionado el video para comparar con el original."
+    : "Este video aún no tiene archivo local: se muestra una escena de demostración. Usa “Usar mi propio video” para filtrar un clip real.";
+  VideoFilters.init(document.getElementById("videoCanvas"), video.hue, source);
+  document.getElementById("playToggle").hidden = !source;
+  document.getElementById("playToggle").textContent = "❚❚";
+  selectFilter("none");
 }
-document.querySelectorAll(".filter-controls .btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".filter-controls .btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    const f = btn.dataset.filter;
-    const row = document.getElementById("filterSliderRow");
-    const slider = document.getElementById("filterSlider");
-    if (f === "pixelate") {
-      row.style.display = "block";
-      document.getElementById("filterSliderLabel").textContent = "Tamaño de bloque (pixelaje)";
-      slider.min = 2; slider.max = 40; slider.value = 12;
-      VideoFilters.setMode("pixelate", 12);
-    } else if (f === "blur") {
-      row.style.display = "block";
-      document.getElementById("filterSliderLabel").textContent = "Radio de desenfoque";
-      slider.min = 1; slider.max = 20; slider.value = 6;
-      VideoFilters.setMode("blur", 6);
-    } else {
-      row.style.display = "none";
-      VideoFilters.setMode("none");
-    }
-  });
+
+function renderFilterButtons() {
+  document.getElementById("filterControls").innerHTML = FILTERS.map(f =>
+    `<button class="btn ghost" data-filter="${f.id}">${f.label}</button>`).join("");
+}
+
+function selectFilter(id) {
+  const f = currentFilter = FILTERS.find(x => x.id === id);
+  VideoFilters.setMode(id);
+  document.querySelectorAll("#filterControls .btn").forEach(b => b.classList.toggle("active", b.dataset.filter === id));
+  document.querySelector(`#filterControls [data-filter="${id}"]`)?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  document.getElementById("filterBadge").textContent = f.label;
+  document.getElementById("filterSliders").innerHTML = f.controls.map(c => `
+    <div class="slider-row">
+      <label>${c.label} <b data-val="${c.key}">${c.value}${c.unit || ""}</b></label>
+      <input type="range" data-param="${c.key}" min="${c.min}" max="${c.max}" value="${c.value}" />
+    </div>`).join("");
+}
+
+renderFilterButtons();
+document.getElementById("filterControls").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-filter]");
+  if (!btn) return;
+  selectFilter(btn.dataset.filter);
+  toast(`Filtro: ${btn.textContent}`);
 });
-document.getElementById("filterSlider").addEventListener("input", (e) => {
-  VideoFilters.setIntensity(Number(e.target.value));
+document.getElementById("filterSliders").addEventListener("input", (e) => {
+  const key = e.target.dataset.param;
+  if (!key) return;
+  const c = currentFilter.controls.find(x => x.key === key);
+  VideoFilters.setParam(key, Number(e.target.value));
+  document.querySelector(`#filterSliders [data-val="${key}"]`).textContent = e.target.value + (c.unit || "");
+});
+
+// Mantener presionado el video muestra el cuadro original (comparación antes/después).
+const canvasWrap = document.getElementById("canvasWrap");
+const holdOriginal = (on) => (e) => {
+  if (e.target.closest("#playToggle")) return;
+  VideoFilters.setShowOriginal(on);
+  canvasWrap.classList.toggle("showing-original", on);
+};
+canvasWrap.addEventListener("pointerdown", holdOriginal(true));
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => canvasWrap.addEventListener(ev, holdOriginal(false)));
+canvasWrap.addEventListener("contextmenu", (e) => e.preventDefault());
+
+document.getElementById("playToggle").addEventListener("click", (e) => {
+  const playing = VideoFilters.togglePlay();
+  if (playing === null) return;
+  e.currentTarget.textContent = playing ? "❚❚" : "▶";
+  e.currentTarget.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+});
+
+document.getElementById("ownVideoInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  if (ownVideoUrl) URL.revokeObjectURL(ownVideoUrl);
+  ownVideoUrl = URL.createObjectURL(file);
+  openPlayer({ title: file.name, hue: 140 }, ownVideoUrl);
+  toast("Video cargado ✔");
 });
 
 /* ---------------- INIT ---------------- */

@@ -108,6 +108,10 @@ const SCHEDULE = [
 ];
 
 // Videos reales de la temporada 2026 de la LMB (Zona Norte), enlazados a YouTube.
+// Para filtrar el video real, agrega `src` con la ruta de un archivo local
+// (p. ej. src: "Assets/videos/ranking.mp4"). Los videos de YouTube no se
+// pueden filtrar: el navegador no permite leer los píxeles de su reproductor.
+// Sin `src` se muestra una escena animada de demostración.
 const VIDEOS = {
   informativos: [
     { title: "Los mejores jugadores de la liga: ranking.", hue: 140, youtube: "https://www.youtube.com/watch?v=g83zZzIovfE" },

@@ -173,20 +173,21 @@
         <button class="back" data-nav="galeria">↩</button>
         <h1 class="page-title" style="margin:0;font-size:15px;" id="playerTitle">Video</h1>
       </div>
-      <p class="lead" style="padding:0 16px;margin:-6px 0 8px;">Demo de filtros de imagen en vivo (pixelaje y desenfoque). El video real está en YouTube.</p>
-      <div style="padding:0 16px 6px;"><a class="btn ghost block" id="playerYtLink" target="_blank" rel="noopener">▶ Ver video real en YouTube</a></div>
+      <p class="lead" style="padding:0 16px;margin:-6px 0 8px;" id="playerNote">Elige un filtro y ajústalo en vivo. Mantén presionado el video para comparar con el original.</p>
       <div class="player-view">
-        <div class="canvas-wrap">
+        <div class="canvas-wrap" id="canvasWrap">
           <canvas id="videoCanvas" width="360" height="640"></canvas>
+          <span class="filter-badge" id="filterBadge">Original</span>
+          <button class="play-toggle" id="playToggle" type="button" aria-label="Pausar">❚❚</button>
         </div>
-        <div class="filter-controls">
-          <button class="btn ghost active" data-filter="none">Original</button>
-          <button class="btn ghost" data-filter="pixelate">Filtro de pixelaje</button>
-          <button class="btn ghost" data-filter="blur">Filtro desenfoque</button>
-        </div>
-        <div class="slider-row" id="filterSliderRow" style="display:none;">
-          <label id="filterSliderLabel">Intensidad</label>
-          <input type="range" id="filterSlider" min="1" max="30" value="10" />
+        <div class="filter-controls" id="filterControls"></div>
+        <div id="filterSliders"></div>
+        <div class="player-actions">
+          <label class="btn ghost file-btn">
+            Usar mi propio video
+            <input type="file" id="ownVideoInput" accept="video/*" hidden />
+          </label>
+          <a class="btn ghost" id="playerYtLink" target="_blank" rel="noopener">▶ Ver en YouTube</a>
         </div>
       </div>
     </section>
@@ -194,12 +195,12 @@
     <!-- AR: SELECCIONA EQUIPO -->
     <section class="screen" data-screen="ar-select">
       <div class="pad" style="padding-bottom:0;">
-        <h1 class="page-title">Escanea un código QR</h1>
-        <p class="lead">Apunta la cámara al código QR de un equipo para ver su experiencia de Realidad Aumentada en 3D.</p>
+        <h1 class="page-title">Escanea el logo de un equipo</h1>
+        <p class="lead">Apunta la cámara al logo de un equipo para ver su experiencia de Realidad Aumentada en 3D.</p>
       </div>
-      <h3 class="qr-grid-title">Códigos QR de equipos</h3>
-      <p class="qr-grid-note">Tócalos para ampliarlos — sirven para escanearlos con la cámara de otro dispositivo.</p>
-      <div class="qr-grid" id="arQrGrid"></div>
+      <h3 class="qr-grid-title">Logos de equipos</h3>
+      <p class="qr-grid-note">Tócalos para ampliarlos — imprímelos o muéstralos en otra pantalla para escanearlos.</p>
+      <div class="qr-grid" id="arTargetGrid"></div>
       <div class="ar-ready">
         <div class="scan-icon">▣</div>
         <h3>¿Listo para escanear?</h3>
@@ -208,7 +209,7 @@
       </div>
     </section>
 
-    <!-- AR: CÁMARA EN VIVO + MODELO 3D ANCLADO AL QR -->
+    <!-- AR: CÁMARA EN VIVO + MODELO 3D ANCLADO AL LOGO -->
     <section class="screen" data-screen="ar-live">
       <div class="roster-head">
         <button class="back" data-nav="ar-select">↩</button>
@@ -234,7 +235,7 @@
         </div>
       </div>
       <div class="ar-fallback">
-        <p>¿Sin cámara disponible? Sube una foto del código QR.</p>
+        <p>¿Sin cámara disponible? Sube una foto del logo.</p>
         <label class="btn ghost file-btn">
           Subir foto
           <input type="file" id="arFileInput" accept="image/*" capture="environment" hidden />
@@ -263,9 +264,11 @@
   </div>
 </div>
 
-<!-- Lector de QR (jsQR) y motor 3D (three.js) para la experiencia AR -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<!-- Módulos de la experiencia AR (three.js + MindAR, en vendor/). ar.js los
+     carga con import() solo al abrir la cámara; ver ar-libs.js. -->
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
+</script>
 <script src="data.js"></script>
 <script src="filters.js"></script>
 <script src="ar.js"></script>
