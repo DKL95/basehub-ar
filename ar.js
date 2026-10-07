@@ -8,9 +8,9 @@
 //      por sus puntos característicos (no por un código) y calcula, cuadro a
 //      cuadro, su posición y orientación en 3D. Las huellas de los logos están
 //      precompiladas en Assets/targets/targets.mind (orden en targets.json).
-//   3. Con esa matriz se coloca en three.js el modelo del equipo parado sobre
-//      el logo: un diorama .glb si el equipo tiene `model` en data.js, o un
-//      trofeo generado por código mientras no lo tenga.
+//   3. Con esa matriz se coloca en three.js el modelo del equipo, de frente
+//      y centrado sobre el logo: un diorama .glb si el equipo tiene `model`
+//      en data.js, o un trofeo generado por código mientras no lo tenga.
 //
 // Las librerías (three.js, GLTFLoader, MindAR) viven en vendor/ y se cargan
 // con import() solo al entrar a la cámara (ver ar-libs.js).
@@ -59,6 +59,10 @@ const Ar = (() => {
     let renderer, scene, camera, anchor, content, canvasEl, resizeObs, clock, mixer = null;
     let controller = null, postMatrices = [], inputW = 0, inputH = 0;
     let currentIndex = -1, spinTarget = null;
+    let logoPose, poseRot, poseScale;
+    // Ancho del trofeo (en sus propias unidades) que equivale al ancho del
+    // logo: con 2.1 el trofeo mide ~1.4 veces el logo, igual que con los QR.
+    const TROPHY_WIDTH = 2.1;
     const modelCache = new Map(); // url -> Promise<gltf>
 
     function setStatus(msg, isError) {
@@ -97,22 +101,25 @@ const Ar = (() => {
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(); // en el origen, mirando a -Z (convención de MindAR)
       clock = new THREE.Clock();
+      logoPose = new THREE.Matrix4();
+      poseRot = new THREE.Quaternion();
+      poseScale = new THREE.Vector3();
 
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
-      const key = new THREE.DirectionalLight(0xffffff, 1.6);
-      key.position.set(1, 2, 3);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+      const key = new THREE.DirectionalLight(0xffffff, 1.2);
+      key.position.set(3, 5, 4);
       scene.add(key);
+      const fill = new THREE.DirectionalLight(0xffffff, 0.6);
+      fill.position.set(-2, 1, 5);
+      scene.add(fill);
 
-      // El ancla recibe la matriz de MindAR. Tras multiplicar por la
-      // postMatrix, el logo ocupa x,y ∈ [-0.5, 0.5] con el eje +Z saliendo de
-      // la imagen. `content` gira 90° para que el "arriba" (+Y) de los modelos
-      // apunte hacia afuera del logo: el diorama queda parado sobre él.
+      // El ancla toma de MindAR solo la posición y el tamaño del logo, no su
+      // inclinación: el modelo se ve siempre de frente y derecho, centrado
+      // sobre el logo y escalado a su ancho (como en la versión con QR).
       anchor = new THREE.Group();
-      anchor.matrixAutoUpdate = false;
       anchor.visible = false;
       scene.add(anchor);
       content = new THREE.Group();
-      content.rotation.x = Math.PI / 2;
       anchor.add(content);
 
       if (window.ResizeObserver) {
@@ -200,19 +207,15 @@ const Ar = (() => {
         const a = Math.random() * Math.PI * 2, r = 1.7 + Math.random() * 1.2;
         positions[i * 3] = Math.cos(a) * r;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 3.2;
-        positions[i * 3 + 2] = Math.sin(a) * r;
+        positions[i * 3 + 2] = Math.sin(a) * r - 0.5;
       }
       const sparkGeo = new THREE.BufferGeometry();
       sparkGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
       g.add(new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: teamColor, size: 0.05, transparent: true, opacity: 0.9 })));
 
-      // El trofeo mide ~3 unidades de alto con la base en y≈-1.29: se escala
-      // para medir ~0.9 veces el ancho del logo y se apoya sobre él.
-      const holder = new THREE.Group();
-      g.position.y = 1.29;
-      holder.add(g);
-      holder.scale.setScalar(0.3);
-      return { object: holder, spin: g };
+      // Gira todo el conjunto (trofeo, placa y chispas); la placa es un
+      // Sprite, así que el logo siempre queda de frente.
+      return { object: g, spin: g };
     }
 
     function loadModel(url) {
@@ -220,16 +223,16 @@ const Ar = (() => {
         const loader = new GLTFLoader();
         loader.setMeshoptDecoder(MeshoptDecoder);
         const p = loader.loadAsync(url).then((gltf) => {
-          // Normaliza: centrado, base en y=0 y la huella (lo más ancho entre
-          // X y Z) igual al ancho del logo.
+          // Normaliza: centrado en el origen y con el mismo ancho que el
+          // trofeo (TROPHY_WIDTH), para que se vea igual de grande sobre el logo.
           const root = gltf.scene;
           const box = new THREE.Box3().setFromObject(root);
           const size = box.getSize(new THREE.Vector3());
           const center = box.getCenter(new THREE.Vector3());
           const holder = new THREE.Group();
-          root.position.set(-center.x, -box.min.y, -center.z);
+          root.position.copy(center).negate();
           holder.add(root);
-          holder.scale.setScalar(1 / Math.max(size.x, size.z, 1e-6));
+          holder.scale.setScalar(TROPHY_WIDTH / Math.max(size.x, size.z, 1e-6));
           holder.userData.cached = true;
           return { holder, animations: gltf.animations };
         });
@@ -310,7 +313,11 @@ const Ar = (() => {
       if (type !== "updateMatrix" || !anchor) return;
       if (worldMatrix) {
         if (targetIndex !== currentIndex) switchTeam(targetIndex);
-        anchor.matrix.fromArray(worldMatrix).multiply(postMatrices[targetIndex]);
+        // Tras la postMatrix el logo ocupa x,y ∈ [-0.5, 0.5]: la traslación es
+        // su centro y la escala, su ancho en unidades del mundo.
+        logoPose.fromArray(worldMatrix).multiply(postMatrices[targetIndex]);
+        logoPose.decompose(anchor.position, poseRot, poseScale);
+        anchor.scale.setScalar(poseScale.x / TROPHY_WIDTH);
         anchor.visible = true;
         camEl.classList.add("found");
         if (statusEl.textContent === "Logo perdido: vuelve a apuntar al logo.") setStatus("");
@@ -352,7 +359,7 @@ const Ar = (() => {
     function renderLoop() {
       const dt = clock ? clock.getDelta() : 0;
       if (mixer) mixer.update(dt);
-      if (spinTarget) spinTarget.rotation.y += dt * 0.8;
+      if (spinTarget) spinTarget.rotation.y += dt * 0.6;
       if (renderer && anchor && anchor.visible) renderer.render(scene, camera);
       else if (renderer) renderer.clear();
       rafId = requestAnimationFrame(renderLoop);

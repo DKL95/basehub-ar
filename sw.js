@@ -5,7 +5,7 @@
 // red. Las librerías de AR (vendor/) y los logos se guardan en caché la
 // primera vez que se usan.
 
-const CACHE = "basehub-v5";
+const CACHE = "basehub-v6";
 const CORE_ASSETS = [
   "index.html",
   "style.css",
