@@ -4,16 +4,16 @@
 const BASEHUB_LOGO = "Assets/Logo%20Basehub.png";
 
 const TEAMS = [
-  { id: "algodoneros", name: "Algodoneros", city: "Torreón, Coahuila", stadium: "Estadio la Revolución", nickname: "Guindas", capacity: "7,600 personas", color: "#5c1f3d", abbr: "AL", logo: "Assets/algodoneros_logo.png" },
-  { id: "tecos", name: "Tecos", city: "Nuevo Laredo, Laredo", stadium: "Parque La Junta", nickname: "Binacionales", capacity: "8,000 personas", color: "#12213a", abbr: "TE", logo: "Assets/Tecolotes_Dos_Laredos_logo.png" },
-  { id: "acereros", name: "Acereros", city: "Monclova, Coahuila", stadium: "Kickapoo Lucky League", nickname: "Furia Azul", capacity: "8,500 personas", color: "#1d3f8f", abbr: "AC", logo: "Assets/Acereros_de_Monclova_logo.jpg" },
-  { id: "caliente", name: "Caliente", city: "Durango, Durango", stadium: "Estadio Francisco Villa", nickname: "Caliente", capacity: "5,000 personas", color: "#1a1a1a", abbr: "CD", logo: "Assets/Caliente_de_Durango_logo.jpg" },
-  { id: "charros", name: "Charros", city: "Zapopan, Jalisco", stadium: "Estadio Panamericano", nickname: "Caporales", capacity: "16,500 personas", color: "#1c4fa1", abbr: "CH", logo: "Assets/charros_logo.png" },
-  { id: "rieleros", name: "Rieleros", city: "Aguascalientes", stadium: "Alberto Romo Chávez", nickname: "El Andén", capacity: "6,500 personas", color: "#0e2a52", abbr: "RI", logo: "Assets/Rieleros_Logo.jpg" },
+  { id: "algodoneros", name: "Algodoneros", city: "Torreón, Coahuila", stadium: "Estadio la Revolución", nickname: "La Máquina Guinda", capacity: "7,600 personas", color: "#5c1f3d", abbr: "AL", logo: "Assets/algodoneros_logo.png" },
+  { id: "tecos", name: "Tecos", city: "Nuevo Laredo, Tamaulipas", stadium: "Parque La Junta", nickname: "Binacionales", capacity: "8,000 personas", color: "#12213a", abbr: "TE", logo: "Assets/Tecolotes_Dos_Laredos_logo.png" },
+  { id: "acereros", name: "Acereros", city: "Monclova, Coahuila", stadium: "Kickapoo Lucky Eagle", nickname: "Furia Azul", capacity: "8,500 personas", color: "#1d3f8f", abbr: "AC", logo: "Assets/Acereros_de_Monclova_logo.jpg" },
+  { id: "caliente", name: "Caliente", city: "Durango, Durango", stadium: "Estadio Francisco Villa", nickname: "Caliente", capacity: "6,000 personas", color: "#1a1a1a", abbr: "CD", logo: "Assets/Caliente_de_Durango_logo.jpg" },
+  { id: "charros", name: "Charros", city: "Zapopan, Jalisco", stadium: "Estadio Panamericano", nickname: "Medias Azules", capacity: "16,500 personas", color: "#1c4fa1", abbr: "CH", logo: "Assets/charros_logo.png" },
+  { id: "rieleros", name: "Rieleros", city: "Aguascalientes", stadium: "Alberto Romo Chávez", nickname: "La Máquina Rielera", capacity: "6,500 personas", color: "#0e2a52", abbr: "RI", logo: "Assets/Rieleros_Logo.jpg" },
   { id: "saraperos", name: "Saraperos", city: "Saltillo, Coahuila", stadium: "Parque Francisco I. Madero", nickname: "Saraperos", capacity: "11,000 personas", color: "#0d6b5f", abbr: "SA", logo: "Assets/Saraperos_logo.png" },
   { id: "sultanes", name: "Sultanes", city: "Monterrey, N.L.", stadium: "Walmart Park", nickname: "Fantasmas Grises", capacity: "22,000 personas", color: "#12213a", abbr: "MTY", logo: "Assets/Sultanes_Logo.jpg" },
   { id: "toros", name: "Toros", city: "Tijuana, Baja California", stadium: "Toros Mobil Park", nickname: "Astados", capacity: "17,000 personas", color: "#a3161e", abbr: "TJ", logo: "Assets/Toros_tijuana_Logo.jpg" },
-  { id: "dorados", name: "Dorados", city: "Chihuahua, Chihuahua", stadium: "Estadio Héctor Espino", nickname: "Dorados", capacity: "15,500 personas", color: "#6a2382", abbr: "DO", logo: "Assets/Dorados_de_Chihuahua_baseball_logo.png" },
+  { id: "dorados", name: "Dorados", city: "Chihuahua, Chihuahua", stadium: "Estadio Monumental Chihuahua", nickname: "Villistas", capacity: "14,500 personas", color: "#6a2382", abbr: "DO", logo: "Assets/Dorados_de_Chihuahua_baseball_logo.png" },
 ];
 
 // Jugadores por equipo. Sultanes usa la alineación mostrada en el mockup
