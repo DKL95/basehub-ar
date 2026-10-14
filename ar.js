@@ -338,6 +338,7 @@ const Ar = (() => {
       showTeamContent(team, index);
       showInfo(team);
       if (typeof state !== "undefined") state.currentTeam = team.id; // para "Ver plantilla"
+      sound("detect");
       if (navigator.vibrate) navigator.vibrate(60);
     }
 
@@ -349,6 +350,7 @@ const Ar = (() => {
       infoStats.innerHTML = statEntries.map(([k, v]) => `<div class="stat-chip"><b>${v}</b>${k}</div>`).join("");
       infoCard.hidden = false;
       document.getElementById("arTools").hidden = false;
+      paintMute();
     }
 
     function resetFound() {
@@ -369,28 +371,10 @@ const Ar = (() => {
     let currentTeam = null;
     // Efectos en curso; cada uno lleva su tiempo transcurrido `t` (segundos).
     let fxSpin = null, fxDance = null, fxParty = null;
-    let liveTimer = null, audioCtx = null, bannerTimer = null;
+    let liveTimer = null, bannerTimer = null;
 
-    // Sonidos cortos generados con WebAudio (no requieren archivos).
-    function tone(freq, start, dur, type, vol) {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = type || "sine";
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(vol || 0.12, audioCtx.currentTime + start);
-      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + start + dur);
-      o.connect(g).connect(audioCtx.destination);
-      o.start(audioCtx.currentTime + start);
-      o.stop(audioCtx.currentTime + start + dur + 0.02);
-    }
-    function sound(kind) {
-      try {
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        if (kind === "party") [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.22, "triangle", 0.14));
-        else if (kind === "run") { tone(988, 0, 0.12, "square", 0.06); tone(1319, 0.1, 0.18, "square", 0.06); }
-        else tone(880, 0, 0.07, "sine", 0.1);
-      } catch { /* sin audio */ }
-    }
+    // Sonidos de estadio (sounds.js); `sound()` sin nombre es el toque genérico.
+    const sound = (name) => StadiumSounds.play(name || "click");
 
     function setToolActive(action, on) {
       const b = document.querySelector(`[data-ar-action="${action}"]`);
@@ -411,18 +395,15 @@ const Ar = (() => {
       panel.dataset.action = "";
       panel.hidden = true;
       document.getElementById("arPanelBody").innerHTML = ""; // detiene el video de YouTube
-      if (window.speechSynthesis) speechSynthesis.cancel();
+      StadiumSounds.stopMurmur();
       clearInterval(liveTimer);
       liveTimer = null;
     }
 
     // Información: el modelo da una vuelta de 360° mientras aparece la ficha
-    // del equipo y se narra en voz alta.
+    // del equipo, con un acorde de órgano.
     function actionInfo(team) {
       const player = (PLAYERS[team.id] || [])[0];
-      const narration = `${team.name} de ${team.city}, también conocidos como ${team.nickname}. ` +
-        `Juegan de local en el ${team.stadium}, con capacidad para ${team.capacity}.` +
-        (player ? ` Su jugador destacado es ${player.name}, en la posición de ${player.pos}.` : "");
       openPanel(`
         <span class="ar-panel-tag">INFORMACIÓN</span>
         <h4>${team.name}</h4>
@@ -432,21 +413,8 @@ const Ar = (() => {
           <dt>Estadio</dt><dd>${team.stadium}</dd>
           <dt>Capacidad</dt><dd>${team.capacity}</dd>
           ${player ? `<dt>Destacado</dt><dd>${player.name} (${player.pos})</dd>` : ""}
-        </dl>
-        <div class="speaking" id="arSpeaking"></div>`, "info");
+        </dl>`, "info");
       fxSpin = { t: 0, from: content.rotation.y };
-      if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
-        const u = new SpeechSynthesisUtterance(narration);
-        u.lang = "es-MX";
-        const voice = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith("es"));
-        if (voice) u.voice = voice;
-        u.rate = 1.02;
-        const label = document.getElementById("arSpeaking");
-        u.onstart = () => { if (label) label.textContent = "🔊 Narrando…"; };
-        u.onend = () => { if (label) label.textContent = ""; };
-        speechSynthesis.cancel();
-        speechSynthesis.speak(u);
-      }
     }
 
     // Animación: el modelo "baila" (salta, se balancea y se estira).
@@ -531,6 +499,7 @@ const Ar = (() => {
         </div>
         <div class="ar-score-meta"><span id="arInning">▲ 1ª entrada</span><span id="arBases">En base: 0</span><span class="outs" id="arOuts">Outs <i></i><i></i><i></i></span></div>
         <div class="ar-play" id="arPlay">¡Playball!</div>`, "live");
+      StadiumSounds.startMurmur();
 
       const PLAYS = [
         ["Ponche", "out"], ["Elevado al jardín central", "out"], ["Rola al cuadro", "out"],
@@ -559,8 +528,10 @@ const Ar = (() => {
           el.textContent = g.runs[side];
           el.classList.add("bump");
           setTimeout(() => el.classList.remove("bump"), 250);
-          sound("run");
         }
+        if (text.includes("JONRÓN")) sound("homer");
+        else if (scored) sound("run");
+        else sound(kind === "out" ? "out" : "hit");
         document.getElementById("arPlay").textContent = `${batting}: ${text}`;
         if (g.outs >= 3) {
           g.outs = 0;
@@ -574,13 +545,26 @@ const Ar = (() => {
       }, 2500);
     }
 
+    function toggleMute() {
+      const on = !StadiumSounds.isMuted();
+      StadiumSounds.setMuted(on);
+      paintMute();
+      if (!on) sound();
+      toast(on ? "Sonido desactivado 🔇" : "Sonido activado 🔊");
+    }
+    function paintMute() {
+      const b = document.querySelector('[data-ar-action="mute"]');
+      if (b) b.innerHTML = StadiumSounds.isMuted() ? "<span>🔇</span>Sonido" : "<span>🔊</span>Sonido";
+    }
+
     function runAction(action) {
+      if (action === "mute") { toggleMute(); return; }
       if (!currentTeam || !anchor) return;
       const panel = document.getElementById("arPanel");
       // Volver a tocar el botón del panel abierto lo cierra.
       if (!panel.hidden && panel.dataset.action === action) { closePanel(); sound(); return; }
-      if (action === "party") sound("party"); else sound();
-      if (action === "info") { actionInfo(currentTeam); toast("Información del equipo 🔊"); }
+      sound(action === "info" || action === "dance" || action === "party" ? action : "click");
+      if (action === "info") { actionInfo(currentTeam); toast("Información del equipo"); }
       else if (action === "dance") { actionDance(); toast("¡A bailar! 💃"); }
       else if (action === "party") { actionParty(currentTeam); toast("¡Celebración! 🎉"); }
       else if (action === "video") { actionVideo(currentTeam); toast("Reproduciendo video 🎬"); }
