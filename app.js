@@ -248,7 +248,9 @@ document.getElementById("nextDay").addEventListener("click", () => {
 });
 document.getElementById("newsletterBtn").addEventListener("click", () => {
   const val = document.getElementById("newsletterEmail").value.trim();
-  toast(val ? "¡Listo! Te avisaremos de cada partido." : "Escribe tu correo primero.");
+  if (!val) toast("Escribe tu correo primero.");
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) toast("Ese correo no parece válido.");
+  else toast("¡Listo! Te avisaremos de cada partido.");
 });
 
 /* ---------------- TRIVIA ---------------- */
@@ -685,5 +687,14 @@ goTo("home");
 // (p. ej. abierto por IP en la red local por http) simplemente no se activa
 // y el resto de la app sigue funcionando igual.
 if ("serviceWorker" in navigator && window.isSecureContext) {
+  // Si se publica una versión nueva, el service worker nuevo toma el control
+  // y se recarga una vez para no quedarse con código de la versión anterior.
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || reloaded) return;
+    reloaded = true;
+    location.reload();
+  });
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }

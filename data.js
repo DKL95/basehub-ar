@@ -81,21 +81,25 @@ const HISTORY = [
 
 const SCHEDULE = [
   { day: "Miércoles, 12 de Agosto", games: [
-    { a: "Piratas", b: "Pericos", time: "19:00" },
     { a: "Caliente", b: "Acereros", time: "19:45" },
     { a: "Sultanes", b: "Charros", time: "19:30" },
     { a: "Toros", b: "Algodoneros", time: "19:30" },
-  ]},
-  { day: "Jueves, 13 de Agosto", games: [
-    { a: "Piratas", b: "Pericos", time: "19:00" },
-    { a: "Caliente", b: "Acereros", time: "19:45" },
-    { a: "Sultanes", b: "Charros", time: "19:30" },
-    { a: "Toros", b: "Algodoneros", time: "19:30" },
-  ]},
-  { day: "Viernes, 14 de Agosto", games: [
     { a: "Dorados", b: "Rieleros", time: "19:15" },
     { a: "Saraperos", b: "Tecos", time: "20:00" },
+  ]},
+  { day: "Jueves, 13 de Agosto", games: [
+    { a: "Acereros", b: "Saraperos", time: "19:00" },
+    { a: "Charros", b: "Toros", time: "20:30" },
+    { a: "Algodoneros", b: "Dorados", time: "19:30" },
+    { a: "Rieleros", b: "Caliente", time: "19:00" },
+    { a: "Tecos", b: "Sultanes", time: "19:30" },
+  ]},
+  { day: "Viernes, 14 de Agosto", games: [
     { a: "Sultanes", b: "Toros", time: "19:30" },
+    { a: "Dorados", b: "Caliente", time: "19:15" },
+    { a: "Rieleros", b: "Charros", time: "19:00" },
+    { a: "Tecos", b: "Acereros", time: "20:00" },
+    { a: "Algodoneros", b: "Saraperos", time: "19:30" },
   ]},
 ];
 
