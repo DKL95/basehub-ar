@@ -235,6 +235,20 @@
         <canvas id="arStage3d"></canvas>
         <div class="scan-reticle" id="arReticle"></div>
         <div class="scan-status" id="arScanStatus">Iniciando cámara…</div>
+        <div class="ar-banner" id="arBanner" hidden></div>
+        <!-- Panel de las acciones (información, video, marcador en vivo) -->
+        <div class="ar-panel" id="arPanel" hidden>
+          <button class="ar-panel-close" id="arPanelClose" type="button" aria-label="Cerrar">✕</button>
+          <div id="arPanelBody"></div>
+        </div>
+        <!-- Botones de acción sobre el modelo 3D -->
+        <div class="ar-tools" id="arTools" hidden>
+          <button type="button" data-ar-action="info"><span>ℹ️</span>Info</button>
+          <button type="button" data-ar-action="dance"><span>💃</span>Animar</button>
+          <button type="button" data-ar-action="party"><span>🎉</span>Celebrar</button>
+          <button type="button" data-ar-action="video"><span>🎬</span>Video</button>
+          <button type="button" data-ar-action="live"><span>📊</span>En vivo</button>
+        </div>
         <div class="ar-info-card" id="arInfoCard" hidden>
           <div class="ar-info-head">
             <b id="arInfoName"></b>
