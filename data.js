@@ -79,14 +79,6 @@ const HISTORY = [
   { year: "1866", color: "#1a3fa0", text: "El 23 de junio de 1866 se fundó el equipo Cincinnati Base Ball Club, en la ciudad de Ohio." },
 ];
 
-const TRIVIA = [
-  { q: "¿Qué ciudad representa Toros?", options: ["Tijuana", "Mexicali", "Ensenada", "La Paz"], correct: 0 },
-  { q: "¿Qué posición tiene Jonathan Villar?", options: ["2B", "P", "C", "CF"], correct: 0 },
-  { q: "¿Qué ciudad representa Sultanes?", options: ["Saltillo", "Monterrey", "Tijuana", "Durango"], correct: 1 },
-  { q: "¿Cuál es el estadio de Sultanes?", options: ["Francisco Villa", "Kickapoo Lucky Eagle", "Walmart Park", "Estadio BBVA"], correct: 2 },
-  { q: "¿Quién fue el campeón del primer Rising Stars?", options: ["Charros", "Tecos", "Toros", "Sultanes"], correct: 3 },
-];
-
 const SCHEDULE = [
   { day: "Miércoles, 12 de Agosto", games: [
     { a: "Piratas", b: "Pericos", time: "19:00" },

@@ -8,9 +8,7 @@ const toastEl = document.getElementById("toast");
 let state = {
   currentTeam: null,   // equipo elegido para roster / AR
   dayIndex: 0,          // día de calendario
-  triviaIndex: 0,
-  triviaScore: 0,
-  triviaAnswered: false,
+  trivia: null,         // partida de trivia en curso (null = lista de trivias)
   newsIndex: 0,          // noticia activa en el carrusel de Inicio
 };
 
@@ -50,10 +48,12 @@ function goTo(screen) {
   document.querySelectorAll(".tabbar button").forEach(b => b.classList.toggle("active", b.dataset.nav === screen));
 
   closeDrawer();
+  if (typeof Badges3D !== "undefined" && Badges3D) Badges3D.close();
 
   if (screen === "jugadores") renderRoster();
   if (screen === "calendario") renderCalendario();
-  if (screen === "trivia") renderTrivia(true);
+  if (screen === "trivia") renderTriviaList();
+  if (screen === "galeria") renderBadges();
   if (screen === "ar-select") Ar.renderTargetGrid();
   if (screen === "ar-live") Ar.enterLive();
   if (screen !== "player") { VideoFilters.stop(); closeEmbed(); }
@@ -252,29 +252,145 @@ document.getElementById("newsletterBtn").addEventListener("click", () => {
 });
 
 /* ---------------- TRIVIA ---------------- */
-function renderTrivia(reset) {
-  if (reset) { state.triviaIndex = 0; state.triviaScore = 0; state.triviaAnswered = false; }
+// 50 trivias de temas mezclados (trivias.js). Al terminar una se gana su
+// insignia 3D (badges3d.js), de oro, plata o bronce según el mejor puntaje;
+// se guardan en este navegador.
+const BADGES_KEY = "basehub-insignias";
+function loadBadges() {
+  try { return JSON.parse(localStorage.getItem(BADGES_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveBadge(id, score) {
+  const badges = loadBadges();
+  const isNew = !(id in badges);
+  const improved = !isNew && score > badges[id];
+  if (isNew || improved) badges[id] = score;
+  try { localStorage.setItem(BADGES_KEY, JSON.stringify(badges)); } catch (e) { /* sin almacenamiento */ }
+  return { isNew, improved };
+}
+function badgeTier(score, total) {
+  if (score === total) return { id: "oro", label: "Oro" };
+  if (score >= Math.ceil(total / 2)) return { id: "plata", label: "Plata" };
+  return { id: "bronce", label: "Bronce" };
+}
+// Nivel de la insignia de la trivia i ("oro" | "plata" | "bronce" | "bloqueada").
+function badgeTierId(i) {
+  const badges = loadBadges(), t = TRIVIAS[i];
+  return t.id in badges ? badgeTier(badges[t.id], t.questions.length).id : "bloqueada";
+}
+function badgeOpts(i) {
+  const t = TRIVIAS[i];
+  return { emblem: t.emblem, tier: badgeTierId(i), accentIndex: i, name: t.badge };
+}
+
+// Los modelos 3D (three.js) se cargan la primera vez que se ven insignias.
+// Mientras tanto se muestra un círculo con ⚾ que luego se reemplaza.
+let Badges3D = null;
+let badges3dLoading = null;
+function loadBadges3D() {
+  if (!badges3dLoading) {
+    badges3dLoading = import("./badges3d.js")
+      .then(m => { Badges3D = m; paintBadgeImages(); return m; })
+      .catch(err => { console.warn("No se pudieron cargar las insignias 3D", err); badges3dLoading = null; });
+  }
+  return badges3dLoading;
+}
+function badgeImgHTML(i, big) {
+  return `<div class="badge-medal${big ? " big" : ""}" data-badge-img="${i}"><span>${badgeTierId(i) === "bloqueada" ? "🔒" : "⚾"}</span></div>`;
+}
+function paintBadgeImages() {
+  if (!Badges3D) { loadBadges3D(); return; }
+  document.querySelectorAll("[data-badge-img]").forEach(el => {
+    const i = Number(el.dataset.badgeImg);
+    const big = el.classList.contains("big");
+    el.innerHTML = `<img src="${Badges3D.thumb(badgeOpts(i), big ? 320 : 192)}" alt="Insignia ${TRIVIAS[i].badge}" />`;
+    el.classList.add("is-3d");
+  });
+}
+async function openBadgeViewer(i, subtitle) {
+  const m = Badges3D || await loadBadges3D();
+  if (!m) return;
+  const t = TRIVIAS[i], tier = badgeTierId(i);
+  const best = loadBadges()[t.id];
+  m.open(badgeOpts(i), {
+    title: t.badge,
+    subtitle: subtitle || (tier === "bloqueada"
+      ? `Bloqueada · completa la ${t.title} para ganarla`
+      : `${t.title} · ${tier[0].toUpperCase() + tier.slice(1)} · mejor: ${best}/${t.questions.length}`),
+    actionsHTML: `<button class="btn" data-viewer-play="${i}">${tier === "bloqueada" ? "Jugar trivia" : "Jugar de nuevo"}</button>`,
+  });
+}
+document.body.addEventListener("click", (e) => {
+  const play = e.target.closest("[data-viewer-play]");
+  if (!play) return;
+  Badges3D?.close();
+  goTo("trivia");
+  startTrivia(Number(play.dataset.viewerPlay));
+});
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderTriviaList() {
+  state.trivia = null;
+  const badges = loadBadges();
+  const done = TRIVIAS.filter(t => t.id in badges).length;
+  document.getElementById("triviaBody").innerHTML = `
+    <div class="trivia-list-head">
+      <span>Insignias ganadas: <b>${done} / ${TRIVIAS.length}</b></span>
+      <button class="link-btn" data-badges-link>Ver en Galería →</button>
+    </div>
+    <div class="trivia-list">
+      ${TRIVIAS.map((t, i) => {
+        const has = t.id in badges;
+        const tier = has ? badgeTier(badges[t.id], t.questions.length) : null;
+        return `
+        <button class="trivia-card${has ? " done tier-" + tier.id : ""}" data-trivia="${i}">
+          ${badgeImgHTML(i)}
+          <div class="trivia-card-title">${t.title}</div>
+          <div class="trivia-card-badge">🏅 ${t.badge}</div>
+          <div class="trivia-card-sub">${has ? `${tier.label} · ${badges[t.id]}/${t.questions.length}` : "Sin jugar"}</div>
+        </button>`;
+      }).join("")}
+    </div>`;
+  document.getElementById("footerTrivia").innerHTML = "";
+  paintBadgeImages();
+}
+
+function startTrivia(index) {
+  const t = TRIVIAS[index];
+  state.trivia = {
+    index, qIndex: 0, score: 0, answered: false,
+    // Mezcla las opciones de cada pregunta en cada partida.
+    questions: t.questions.map(q => {
+      const options = shuffle([q.a, ...q.w]);
+      return { q: q.q, options, correct: options.indexOf(q.a) };
+    }),
+  };
+  renderTriviaQuestion();
+  screensEl.scrollTop = 0;
+}
+
+function renderTriviaQuestion() {
+  const st = state.trivia;
+  const t = TRIVIAS[st.index];
   const body = document.getElementById("triviaBody");
 
-  if (state.triviaIndex >= TRIVIA.length) {
-    body.innerHTML = `
-      <div class="trivia-result">
-        <div>¡Trivia completada!</div>
-        <div class="score">${state.triviaScore} / ${TRIVIA.length}</div>
-        <button class="btn" id="retryTrivia">Volver a intentar</button>
-      </div>`;
-    document.getElementById("retryTrivia").addEventListener("click", () => renderTrivia(true));
-    return;
-  }
+  if (st.qIndex >= st.questions.length) { renderTriviaResult(); return; }
 
-  const q = TRIVIA[state.triviaIndex];
-  state.triviaAnswered = false;
+  const q = st.questions[st.qIndex];
+  st.answered = false;
   body.innerHTML = `
     <div class="trivia-wrap">
-      <div class="trivia-progress">Pregunta ${state.triviaIndex + 1} de ${TRIVIA.length} &nbsp;·&nbsp; Aciertos: ${state.triviaScore}</div>
+      <button class="link-btn" data-trivia-back>← Todas las trivias</button>
+      <div class="trivia-progress"><b>${t.title}</b><br>Pregunta ${st.qIndex + 1} de ${st.questions.length} &nbsp;·&nbsp; Aciertos: ${st.score}</div>
       <div class="trivia-q-wrap">
         <div class="trivia-banner">${q.q}</div>
-        <span class="trivia-tag">Pregunta No${state.triviaIndex + 1}</span>
+        <span class="trivia-tag">Pregunta No${st.qIndex + 1}</span>
       </div>
       <div class="trivia-options">
         ${q.options.map((o, i) => `<button data-i="${i}">${o}</button>`).join("")}
@@ -282,22 +398,65 @@ function renderTrivia(reset) {
     </div>`;
   body.querySelectorAll(".trivia-options button").forEach(btn => {
     btn.addEventListener("click", () => {
-      if (state.triviaAnswered) return;
-      state.triviaAnswered = true;
+      if (st.answered || state.trivia !== st) return;
+      st.answered = true;
       const i = Number(btn.dataset.i);
-      const correct = q.correct;
       body.querySelectorAll(".trivia-options button").forEach((b2, i2) => {
         b2.disabled = true;
-        if (i2 === correct) b2.classList.add("correct");
+        if (i2 === q.correct) b2.classList.add("correct");
         else if (i2 === i) b2.classList.add("wrong");
       });
-      if (i === correct) { state.triviaScore++; toast("¡Correcto! ⚾"); }
+      if (i === q.correct) { st.score++; toast("¡Correcto! ⚾"); }
       else toast("Casi... ¡sigue intentando!");
-      setTimeout(() => { state.triviaIndex++; renderTrivia(false); }, 1100);
+      setTimeout(() => {
+        if (state.trivia !== st) return; // salió de la trivia mientras tanto
+        st.qIndex++;
+        renderTriviaQuestion();
+      }, 1100);
     });
   });
-  document.getElementById("footerTrivia").innerHTML = "";
 }
+
+function renderTriviaResult() {
+  const st = state.trivia;
+  const t = TRIVIAS[st.index];
+  const total = st.questions.length;
+  const { isNew, improved } = saveBadge(t.id, st.score);
+  const best = loadBadges()[t.id] ?? st.score;
+  const tier = badgeTier(best, total);
+  const next = st.index + 1 < TRIVIAS.length ? st.index + 1 : null;
+  document.getElementById("triviaBody").innerHTML = `
+    <div class="trivia-result">
+      <div>¡Trivia completada!</div>
+      <div class="score">${st.score} / ${total}</div>
+      <button class="badge-earned tier-${tier.id}" data-badge-view="${st.index}">
+        ${badgeImgHTML(st.index, true)}
+        <div><b>${isNew ? "¡Nueva insignia!" : improved ? "¡Mejoraste tu insignia!" : "Insignia"}: ${t.badge}</b></div>
+        <div class="badge-tier-label">${tier.label}${best > st.score ? ` · tu mejor: ${best}/${total}` : ""}</div>
+        <div class="badge-tap-hint">Toca para verla en 3D</div>
+      </button>
+      <div class="trivia-result-actions">
+        ${next !== null ? `<button class="btn" data-trivia="${next}">Siguiente trivia</button>` : ""}
+        <button class="btn ghost" data-trivia="${st.index}">Volver a intentar</button>
+        <button class="btn ghost" data-badges-link>Ver mis insignias</button>
+        <button class="link-btn" data-trivia-back>← Todas las trivias</button>
+      </div>
+    </div>`;
+  paintBadgeImages();
+  if (isNew || improved) {
+    toast(`🏅 Insignia ${tier.label}: ${t.badge}`);
+    openBadgeViewer(st.index, `${isNew ? "¡Nueva insignia!" : "¡Subiste de nivel!"} · ${tier.label} · ${st.score}/${total}`);
+  }
+}
+
+document.getElementById("triviaBody").addEventListener("click", (e) => {
+  if (e.target.closest("[data-badges-link]")) { goTo("galeria"); setGalleryTab("insignias"); return; }
+  const view = e.target.closest("[data-badge-view]");
+  if (view) { openBadgeViewer(Number(view.dataset.badgeView)); return; }
+  const start = e.target.closest("[data-trivia]");
+  if (start) { startTrivia(Number(start.dataset.trivia)); return; }
+  if (e.target.closest("[data-trivia-back]")) { renderTriviaList(); screensEl.scrollTop = 0; }
+});
 
 /* ---------------- GALERIA ---------------- */
 function ytThumb(url) {
@@ -317,6 +476,43 @@ function videoCardHTML(v, cat, idx) {
     <div class="video-title">${v.title}</div>
     <div class="video-sub">Toca para verlo con filtros 🎛️</div>`;
 }
+// Pestañas de Galería: videos e insignias de trivia.
+function setGalleryTab(tab) {
+  document.querySelectorAll("#galleryTabs button").forEach(b => b.classList.toggle("active", b.dataset.galleryTab === tab));
+  document.querySelectorAll("[data-gallery-panel]").forEach(p => { p.hidden = p.dataset.galleryPanel !== tab; });
+}
+document.getElementById("galleryTabs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-gallery-tab]");
+  if (b) setGalleryTab(b.dataset.galleryTab);
+});
+
+function renderBadges() {
+  const badges = loadBadges();
+  const done = TRIVIAS.filter(t => t.id in badges).length;
+  const count = (tierId) => TRIVIAS.filter(t => t.id in badges && badgeTier(badges[t.id], t.questions.length).id === tierId).length;
+  document.getElementById("badgeSummary").innerHTML = `
+    <div class="badge-progress"><div style="width:${(done / TRIVIAS.length) * 100}%"></div></div>
+    <div class="badge-summary-row">
+      <span><b>${done}</b> / ${TRIVIAS.length} insignias</span>
+      <span>🥇 ${count("oro")} &nbsp; 🥈 ${count("plata")} &nbsp; 🥉 ${count("bronce")}</span>
+    </div>`;
+  document.getElementById("badgeGrid").innerHTML = TRIVIAS.map((t, i) => {
+    const has = t.id in badges;
+    const tier = has ? badgeTier(badges[t.id], t.questions.length) : null;
+    return `<button class="badge-cell ${has ? "tier-" + tier.id : "locked"}" data-badge-view="${i}">
+      ${badgeImgHTML(i)}
+      <div class="badge-name">${t.badge}</div>
+      <div class="badge-tier-label">${has ? `${tier.label} · ${badges[t.id]}/${t.questions.length}` : `Bloqueada · ${t.title}`}</div>
+    </button>`;
+  }).join("");
+  paintBadgeImages();
+}
+// Tocar una insignia la abre en el visor 3D (desde ahí se puede jugar su trivia).
+document.getElementById("badgeGrid").addEventListener("click", (e) => {
+  const cell = e.target.closest("[data-badge-view]");
+  if (cell) openBadgeViewer(Number(cell.dataset.badgeView));
+});
+
 function renderGaleria() {
   document.getElementById("videoGridInfo").innerHTML = VIDEOS.informativos.map((v, i) => `<div>${videoCardHTML(v, "informativos", i)}</div>`).join("");
   document.getElementById("videoGridLiga").innerHTML = VIDEOS.liga.map((v, i) => `<div>${videoCardHTML(v, "liga", i)}</div>`).join("");

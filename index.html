@@ -35,7 +35,7 @@
       <a data-nav="equipos">Equipos</a>
       <a data-nav="calendario">Calendario</a>
       <a data-nav="trivia">Trivia</a>
-      <a data-nav="galeria">Galería de videos</a>
+      <a data-nav="galeria">Galería</a>
       <a data-nav="ar-select">Realidad Aumentada</a>
     </nav>
   </div>
@@ -157,13 +157,24 @@
     <!-- GALERIA -->
     <section class="screen" data-screen="galeria">
       <div class="pad" style="padding-bottom:0;">
-        <h1 class="page-title">Galería de videos</h1>
-        <p class="lead">Toca un video para verlo aquí mismo y aplicarle filtros de procesamiento de imagen en vivo.</p>
+        <h1 class="page-title">Galería</h1>
       </div>
-      <h2 class="section-title pad-h">Videos informativos</h2>
-      <div class="video-grid" id="videoGridInfo"></div>
-      <h2 class="section-title pad-h">Videos de la liga</h2>
-      <div class="video-grid" id="videoGridLiga"></div>
+      <div class="gallery-tabs" id="galleryTabs">
+        <button class="active" data-gallery-tab="videos">🎬 Videos</button>
+        <button data-gallery-tab="insignias">🏅 Insignias</button>
+      </div>
+      <div data-gallery-panel="videos">
+        <p class="lead pad-h">Toca un video para verlo aquí mismo y aplicarle filtros de procesamiento de imagen en vivo.</p>
+        <h2 class="section-title pad-h">Videos informativos</h2>
+        <div class="video-grid" id="videoGridInfo"></div>
+        <h2 class="section-title pad-h">Videos de la liga</h2>
+        <div class="video-grid" id="videoGridLiga"></div>
+      </div>
+      <div data-gallery-panel="insignias" hidden>
+        <p class="lead pad-h">Completa cada trivia para ganar su insignia 3D: oro con 5/5, plata con 3 o 4 aciertos y bronce con menos. Toca una para verla en 3D.</p>
+        <div id="badgeSummary"></div>
+        <div class="badge-grid" id="badgeGrid"></div>
+      </div>
       <div id="footerGaleria"></div>
     </section>
 
@@ -272,6 +283,7 @@
 { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
 </script>
 <script src="data.js"></script>
+<script src="trivias.js"></script>
 <script src="filters.js"></script>
 <script src="ar.js"></script>
 <script src="app.js"></script>

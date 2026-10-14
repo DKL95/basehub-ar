@@ -5,13 +5,15 @@
 // red. Las librerías de AR (vendor/) y los logos se guardan en caché la
 // primera vez que se usan.
 
-const CACHE = "basehub-v6";
+const CACHE = "basehub-v9";
 const CORE_ASSETS = [
   "index.html",
   "style.css",
   "app.js",
   "ar.js",
   "data.js",
+  "trivias.js",
+  "badges3d.js",
   "filters.js",
   "ar-libs.js",
   "manifest.webmanifest",
