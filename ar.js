@@ -58,12 +58,20 @@ const Ar = (() => {
     let stream = null, requestId = 0, rafId = null, objectUrl = null;
     let renderer, scene, camera, anchor, content, canvasEl, resizeObs, clock, mixer = null, clipActions = [];
     let controller = null, postMatrices = [], inputW = 0, inputH = 0;
-    let currentIndex = -1, spinTarget = null;
+    let currentIndex = -1, spinTargets = [];
     let logoPose, poseRot, poseScale;
     // Ancho del trofeo (en sus propias unidades) que equivale al ancho del
     // logo: con 2.1 el trofeo mide ~1.4 veces el logo, igual que con los QR.
     const TROPHY_WIDTH = 2.1;
     const modelCache = new Map(); // url -> Promise<{ holder, animations }>
+    // Opción "Diorama": la gorra del equipo puesta en la estatua del diorama
+    // (con su bat, guante, pelota y podio) en lugar de la gorra sola. Las
+    // gorras se exportaron en las mismas coordenadas que el diorama.
+    const DIORAMA_MODEL = "Assets/models/diorama.glb";
+    // Altura del diorama en unidades del trofeo (2.1 = ancho del trofeo).
+    const DIORAMA_HEIGHT = 1.6;
+    const capClones = new Map(); // url de la gorra -> copia para el diorama
+    let dioramaOn = false, showSeq = 0;
 
     function setStatus(msg, isError) {
       if (statusEl) statusEl.textContent = msg || "";
@@ -159,13 +167,32 @@ const Ar = (() => {
 
     function clearContent() {
       if (mixer) { mixer.stopAllAction(); mixer = null; clipActions = []; }
-      spinTarget = null;
+      spinTargets = [];
       while (content.children.length) {
         const child = content.children.pop();
         // Los modelos .glb se guardan en caché para volver a mostrarlos
         // al instante; solo se liberan los generados por código.
         if (!child.userData.cached) disposeObject(child);
       }
+    }
+
+    // Chispas del color del equipo alrededor del modelo (unidades del trofeo).
+    function buildSparkles(team) {
+      const sparkCount = 90;
+      const positions = new Float32Array(sparkCount * 3);
+      for (let i = 0; i < sparkCount; i++) {
+        const a = Math.random() * Math.PI * 2, r = 1.7 + Math.random() * 1.2;
+        positions[i * 3] = Math.cos(a) * r;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 3.2;
+        positions[i * 3 + 2] = Math.sin(a) * r - 0.5;
+      }
+      const sparkGeo = new THREE.BufferGeometry();
+      sparkGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      // Tamaño fijo en pixeles: el de los puntos no hereda la escala del ancla
+      // y, medido en unidades de MindAR, quedaba por debajo de un pixel. El
+      // color se aclara para que se vean también los equipos azul marino o negro.
+      const color = new THREE.Color(team.color).lerp(new THREE.Color(0xffffff), 0.35);
+      return new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color, size: 6, sizeAttenuation: false, transparent: true, opacity: 0.9 }));
     }
 
     // Trofeo generado por código (se usa mientras el equipo no tenga diorama).
@@ -201,17 +228,7 @@ const Ar = (() => {
         badgeMat.needsUpdate = true;
       });
 
-      const sparkCount = 50;
-      const positions = new Float32Array(sparkCount * 3);
-      for (let i = 0; i < sparkCount; i++) {
-        const a = Math.random() * Math.PI * 2, r = 1.7 + Math.random() * 1.2;
-        positions[i * 3] = Math.cos(a) * r;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 3.2;
-        positions[i * 3 + 2] = Math.sin(a) * r - 0.5;
-      }
-      const sparkGeo = new THREE.BufferGeometry();
-      sparkGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-      g.add(new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: teamColor, size: 0.05, transparent: true, opacity: 0.9 })));
+      g.add(buildSparkles(team));
 
       // Gira todo el conjunto (trofeo, placa y chispas); la placa es un
       // Sprite, así que el logo siempre queda de frente.
@@ -229,11 +246,19 @@ const Ar = (() => {
           const box = new THREE.Box3().setFromObject(root);
           const size = box.getSize(new THREE.Vector3());
           const center = box.getCenter(new THREE.Vector3());
+          // El desplazamiento va en un grupo intermedio para que la escena
+          // original quede intacta y se pueda copiar (gorra -> diorama).
+          const offset = new THREE.Group();
+          offset.position.copy(center).negate();
+          offset.add(root);
           const holder = new THREE.Group();
-          root.position.copy(center).negate();
-          holder.add(root);
-          holder.scale.setScalar(TROPHY_WIDTH / Math.max(size.x, size.z, 1e-6));
+          holder.add(offset);
+          // El diorama se ajusta por su altura (la estatua es más alta que
+          // ancha) para que quede del tamaño del logo y no se salga del cuadro.
+          const fit = url === DIORAMA_MODEL ? size.y * TROPHY_WIDTH / DIORAMA_HEIGHT : Math.max(size.x, size.z);
+          holder.scale.setScalar(TROPHY_WIDTH / Math.max(fit, 1e-6));
           holder.userData.cached = true;
+          holder.userData.root = root;
           return { holder, animations: gltf.animations };
         });
         p.catch(() => modelCache.delete(url));
@@ -242,17 +267,37 @@ const Ar = (() => {
       return modelCache.get(url);
     }
 
+    // Pone en el diorama (en caché) la gorra del equipo, en lugar de la anterior.
+    function wearCap(holder, capUrl, capModel) {
+      if (!capClones.has(capUrl)) capClones.set(capUrl, capModel.holder.userData.root.clone());
+      const root = holder.userData.root, cap = capClones.get(capUrl);
+      if (holder.userData.cap) root.remove(holder.userData.cap);
+      holder.userData.cap = cap;
+      root.add(cap);
+    }
+
     async function showTeamContent(team, index) {
       clearContent();
+      const seq = ++showSeq;
       if (team.model) {
         setStatus("Cargando modelo 3D…");
         try {
-          const { holder, animations } = await loadModel(team.model);
-          if (currentIndex !== index) return; // se cambió de logo mientras cargaba
+          const withDiorama = dioramaOn;
+          const [{ holder, animations }, capModel] = await Promise.all([
+            loadModel(withDiorama ? DIORAMA_MODEL : team.model),
+            withDiorama ? loadModel(team.model) : null,
+          ]);
+          // Se cambió de logo o de opción mientras cargaba.
+          if (currentIndex !== index || seq !== showSeq) return;
+          if (withDiorama) wearCap(holder, team.model, capModel);
           // Empieza de frente (modelYaw) y gira sobre su eje mientras se ve.
           holder.rotation.y = THREE.MathUtils.degToRad(team.modelYaw || 0);
-          spinTarget = holder;
-          content.add(holder);
+          // Las chispas van aparte (no dentro de holder) porque holder está en
+          // caché y clearContent solo libera lo que no lo está.
+          const sparkles = buildSparkles(team);
+          // El diorama se queda quieto, de frente; la gorra sola gira.
+          spinTargets = withDiorama ? [sparkles] : [holder, sparkles];
+          content.add(holder, sparkles);
           if (animations.length) {
             mixer = new THREE.AnimationMixer(holder);
             clipActions = animations.map((clip) => mixer.clipAction(clip));
@@ -262,12 +307,12 @@ const Ar = (() => {
           return;
         } catch (err) {
           console.warn("No se pudo cargar el modelo", team.model, err);
-          if (currentIndex !== index) return;
+          if (currentIndex !== index || seq !== showSeq) return;
         }
       }
       const trophy = buildTrophy(team);
       content.add(trophy.object);
-      spinTarget = trophy.spin;
+      spinTargets = [trophy.spin];
       setStatus("");
     }
 
@@ -358,6 +403,7 @@ const Ar = (() => {
       infoStats.innerHTML = statEntries.map(([k, v]) => `<div class="stat-chip"><b>${v}</b>${k}</div>`).join("");
       infoCard.hidden = false;
       document.getElementById("arTools").hidden = false;
+      setToolActive("diorama", dioramaOn);
       paintMute();
     }
 
@@ -623,6 +669,17 @@ const Ar = (() => {
       toast("Foto descargada 📸");
     }
 
+    // Diorama: alterna entre la gorra sola y la gorra puesta en la estatua. La
+    // opción se queda para los siguientes logos que se escaneen.
+    function toggleDiorama() {
+      dioramaOn = !dioramaOn;
+      setToolActive("diorama", dioramaOn);
+      sound();
+      toast(dioramaOn ? "Diorama 🏟️" : "Solo la gorra 🧢");
+      stopFx();
+      showTeamContent(currentTeam, currentIndex);
+    }
+
     function toggleMute() {
       const on = !StadiumSounds.isMuted();
       StadiumSounds.setMuted(on);
@@ -639,6 +696,7 @@ const Ar = (() => {
       if (action === "mute") { toggleMute(); return; }
       if (!currentTeam || !anchor) return;
       if (action === "photo") { sound("photo"); actionPhoto(currentTeam); return; }
+      if (action === "diorama") { toggleDiorama(); return; }
       const panel = document.getElementById("arPanel");
       // Volver a tocar el botón del panel abierto lo cierra.
       if (!panel.hidden && panel.dataset.action === action) { closePanel(); sound(); return; }
@@ -710,7 +768,7 @@ const Ar = (() => {
     function renderLoop() {
       const dt = clock ? Math.min(clock.getDelta(), 0.1) : 0;
       if (mixer) mixer.update(dt);
-      if (spinTarget) spinTarget.rotation.y += dt * 0.6;
+      spinTargets.forEach((o) => { o.rotation.y += dt * 0.6; });
       updateFx(dt);
       if (renderer && anchor && anchor.visible) renderer.render(scene, camera);
       else if (renderer) renderer.clear();

@@ -585,10 +585,10 @@ table.standings tr.qualified td { background: #eef9ef; }
 /* Botones de acción de la ventana AR */
 .ar-tools {
   position: absolute; right: 8px; top: 10px; z-index: 6;
-  display: flex; flex-direction: column; gap: 5px;
+  display: flex; flex-direction: column; gap: 4px;
 }
 .ar-tools button {
-  width: 48px; height: 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  width: 48px; height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
   background: rgba(10,10,10,.72); backdrop-filter: blur(6px); border: 1.5px solid rgba(255,255,255,.3); border-radius: 12px;
   color: #fff; font: inherit; font-size: 8.5px; font-weight: 700; padding: 0; cursor: pointer;
   transition: transform .12s, background .2s, border-color .2s;
