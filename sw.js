@@ -10,7 +10,7 @@
 //  - Librerías de vendor/, imágenes y targets.mind: primero la caché (no
 //    cambian y pesan mucho), y se guardan la primera vez que se usan.
 
-const CACHE = "basehub-v13";
+const CACHE = "basehub-v15";
 const CORE_ASSETS = [
   "index.html",
   "style.css",

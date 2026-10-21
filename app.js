@@ -226,18 +226,62 @@ function statTable(cols, data) {
 }
 
 /* ---------------- CALENDARIO ---------------- */
+// "2026-08-08" -> "Sábado, 8 de agosto"
+function formatDay(iso) {
+  const s = new Date(iso + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function scheduleTeam(name, won) {
+  const t = TEAMS.find(x => x.name === name);
+  const logo = t ? `<img class="game-logo" src="${t.logo}" alt="" />` : "";
+  return `<span class="game-team${won ? " won" : ""}">${logo}${name}</span>`;
+}
+
 function renderCalendario() {
   const d = SCHEDULE[state.dayIndex];
+  const stages = [...new Set(SCHEDULE.map(x => x.stage))];
+  document.getElementById("stageChips").innerHTML = stages.map(s =>
+    `<button class="stage-chip${s === d.stage ? " active" : ""}" data-stage="${s}">${s}</button>`).join("");
   document.getElementById("dayIndicator").textContent = `${state.dayIndex + 1} / ${SCHEDULE.length}`;
   document.getElementById("scheduleDay").innerHTML = `
     <div class="day-block">
-      <h4>${d.day}</h4>
+      <span class="stage-tag">${d.stage}</span>
+      <h4>${formatDay(d.date)}</h4>
       <table class="games">
-        ${d.games.map(g => `<tr><td><b>${g.a}</b></td><td>VS</td><td>${g.b}</td><td class="time">${g.time}</td></tr>`).join("")}
+        <tr><th>Visitante</th><th>Marcador</th><th>Local</th></tr>
+        ${d.games.map(g => `<tr>
+          <td>${scheduleTeam(g.a, g.ra > g.rb)}</td>
+          <td class="score">${g.ra} – ${g.rb}${g.extra ? `<small>F/${g.extra}</small>` : ""}</td>
+          <td>${scheduleTeam(g.b, g.rb > g.ra)}</td></tr>`).join("")}
       </table>
+    </div>`;
+
+  const [, lw, ll] = SEASON.standings[0];
+  document.getElementById("seasonInfo").innerHTML = `
+    <div class="day-block">
+      <h4>Tabla final · Rol regular</h4>
+      <table class="games standings">
+        <tr><th>#</th><th>Equipo</th><th>G</th><th>P</th><th>PCT</th><th>JV</th></tr>
+        ${SEASON.standings.map(([name, w, l], i) => `<tr${i < 6 ? ' class="qualified"' : ""}>
+          <td>${i + 1}</td><td>${scheduleTeam(name)}</td><td>${w}</td><td>${l}</td>
+          <td>${(w / (w + l)).toFixed(3).replace(/^0/, "")}</td>
+          <td>${i ? (((lw - w) + (l - ll)) / 2).toFixed(1) : "–"}</td></tr>`).join("")}
+      </table>
+      <p class="standings-note">Sombreados: los seis equipos que avanzaron al Primer Playoff.</p>
+      <h4>Fechas clave de la temporada</h4>
+      <ul class="milestones">
+        ${SEASON.milestones.map(m => `<li><b>${m.date}</b>${m.text}</li>`).join("")}
+      </ul>
     </div>`;
   document.getElementById("footerCalendario").innerHTML = footerHTML();
 }
+document.getElementById("stageChips").addEventListener("click", (e) => {
+  const chip = e.target.closest("[data-stage]");
+  if (!chip) return;
+  state.dayIndex = SCHEDULE.findIndex(x => x.stage === chip.dataset.stage);
+  renderCalendario();
+});
 document.getElementById("prevDay").addEventListener("click", () => {
   state.dayIndex = (state.dayIndex - 1 + SCHEDULE.length) % SCHEDULE.length;
   renderCalendario();

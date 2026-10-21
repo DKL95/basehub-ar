@@ -545,6 +545,76 @@ const Ar = (() => {
       }, 2500);
     }
 
+    // Foto: junta en un lienzo lo que se ve en la ventana AR (la cámara o la
+    // foto subida, recortada igual que con object-fit: cover, y encima el
+    // modelo 3D) y la guarda en el teléfono.
+    function actionPhoto(team) {
+      const W = canvasEl.width, H = canvasEl.height;
+      const out = document.createElement("canvas");
+      out.width = W; out.height = H;
+      const ctx = out.getContext("2d");
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, W, H);
+
+      const bg = stillImg.hidden ? video : stillImg;
+      const sw = bg.videoWidth || bg.naturalWidth, sh = bg.videoHeight || bg.naturalHeight;
+      if (sw && sh) {
+        const k = Math.max(W / sw, H / sh);
+        ctx.drawImage(bg, (W - sw * k) / 2, (H - sh * k) / 2, sw * k, sh * k);
+      }
+      // El canvas de WebGL se borra después de mostrarse en pantalla: se
+      // vuelve a dibujar justo aquí para copiarlo en el mismo instante.
+      renderer.render(scene, camera);
+      ctx.drawImage(canvasEl, 0, 0);
+
+      // Marca de agua con el equipo.
+      const fs = Math.round(H * 0.035);
+      ctx.font = `800 ${fs}px system-ui, sans-serif`;
+      ctx.fillStyle = "#fff";
+      ctx.shadowColor = "rgba(0,0,0,.8)";
+      ctx.shadowBlur = fs * 0.3;
+      ctx.fillText(`BASE-HUB · ${team.name}`, fs * 0.7, H - fs * 0.8);
+
+      const flash = document.getElementById("arFlash");
+      flash.hidden = true;
+      void flash.offsetWidth; // reinicia la animación CSS
+      flash.hidden = false;
+      setTimeout(() => { flash.hidden = true; }, 450);
+
+      const name = `basehub-${team.id}-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-")}.jpg`;
+      out.toBlob((blob) => {
+        if (!blob) { toast("No se pudo tomar la foto"); return; }
+        savePhoto(blob, name);
+      }, "image/jpeg", 0.92);
+    }
+
+    // En iPhone/iPad una descarga va a la app Archivos; con la hoja de
+    // compartir se puede elegir "Guardar imagen" y queda en Fotos. En los
+    // demás teléfonos se descarga directo.
+    function savePhoto(blob, name) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      const file = new File([blob], name, { type: "image/jpeg" });
+      if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: "Base-Hub AR" })
+          .then(() => toast("Foto guardada 📸"))
+          .catch((err) => { if (err.name !== "AbortError") downloadPhoto(blob, name); });
+        return;
+      }
+      downloadPhoto(blob, name);
+    }
+
+    function downloadPhoto(blob, name) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      toast("Foto descargada 📸");
+    }
+
     function toggleMute() {
       const on = !StadiumSounds.isMuted();
       StadiumSounds.setMuted(on);
@@ -560,6 +630,7 @@ const Ar = (() => {
     function runAction(action) {
       if (action === "mute") { toggleMute(); return; }
       if (!currentTeam || !anchor) return;
+      if (action === "photo") { sound("photo"); actionPhoto(currentTeam); return; }
       const panel = document.getElementById("arPanel");
       // Volver a tocar el botón del panel abierto lo cierra.
       if (!panel.hidden && panel.dataset.action === action) { closePanel(); sound(); return; }

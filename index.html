@@ -130,14 +130,17 @@
     <!-- CALENDARIO -->
     <section class="screen" data-screen="calendario">
       <div class="pad" style="padding-bottom:0;">
-        <h1 class="page-title">Próximos partidos</h1>
+        <h1 class="page-title">Calendario 2026</h1>
+        <p class="lead">Resultados de la temporada 2026 de la Zona Norte, del Primer Playoff a la Serie del Rey.</p>
       </div>
+      <div class="stage-chips" id="stageChips"></div>
       <div id="scheduleDay"></div>
       <div class="day-nav">
         <button id="prevDay">‹</button>
         <span id="dayIndicator" style="align-self:center;margin:0 12px;font-size:12px;color:#666;"></span>
         <button id="nextDay">›</button>
       </div>
+      <div id="seasonInfo"></div>
       <div class="newsletter-box">
         <h4>No te pierdas ningún partido</h4>
         <p>Vuélvete miembro para recibir notificaciones. ¡Solo necesitamos tu correo electrónico!</p>
@@ -236,6 +239,7 @@
         <div class="scan-reticle" id="arReticle"></div>
         <div class="scan-status" id="arScanStatus">Iniciando cámara…</div>
         <div class="ar-banner" id="arBanner" hidden></div>
+        <div class="ar-flash" id="arFlash" hidden></div>
         <!-- Panel de las acciones (información, video, marcador en vivo) -->
         <div class="ar-panel" id="arPanel" hidden>
           <button class="ar-panel-close" id="arPanelClose" type="button" aria-label="Cerrar">✕</button>
@@ -248,6 +252,7 @@
           <button type="button" data-ar-action="party"><span>🎉</span>Celebrar</button>
           <button type="button" data-ar-action="video"><span>🎬</span>Video</button>
           <button type="button" data-ar-action="live"><span>📊</span>En vivo</button>
+          <button type="button" data-ar-action="photo"><span>📸</span>Foto</button>
           <button type="button" data-ar-action="mute"><span>🔊</span>Sonido</button>
         </div>
         <div class="ar-info-card" id="arInfoCard" hidden>

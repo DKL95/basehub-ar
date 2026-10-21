@@ -142,6 +142,8 @@ const StadiumSounds = (() => {
       melody([["G4", 0.16], ["C5", 0.16], ["E5", 0.16], ["G5", 0.34], ["E5", 0.16], ["G5", 0.7]], t + 0.3, 0.15);
       crowd(t + 0.15, 3.2, 0.5);
     },
+    // Foto: chasquido doble de obturador.
+    photo() { const t = now(); noise(t, 0.035, "highpass", 3000, 0.8, 0.5); noise(t + 0.07, 0.05, "bandpass", 1800, 1, 0.4); },
     hit() { batCrack(now()); },
     out() { glovePop(now()); },
     run() { const t = now(); crowd(t, 1.6, 0.4); sine(t, NOTE.G5, 0.15, 0.08, "square"); sine(t + 0.12, NOTE.C6, 0.25, 0.08, "square"); },

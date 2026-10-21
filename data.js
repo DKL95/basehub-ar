@@ -79,28 +79,88 @@ const HISTORY = [
   { year: "1866", color: "#1a3fa0", text: "El 23 de junio de 1866 se fundó el equipo Cincinnati Base Ball Club, en la ciudad de Ohio." },
 ];
 
+// Temporada 2026 de la LMB, Zona Norte (datos reales). Fuente: Wikipedia,
+// "Liga Mexicana de Béisbol 2026", y notas de la liga sobre el calendario.
+// En cada juego `a` es el visitante y `b` el local; `ra`/`rb` sus carreras y
+// `extra` las entradas cuando el juego se fue a extra innings.
+const SEASON = {
+  milestones: [
+    { date: "16 abr", text: "Juego inaugural de la temporada: Piratas de Campeche vs Diablos Rojos del México." },
+    { date: "17 abr", text: "Arranca la Zona Norte: Sultanes en Torreón ante Algodoneros, Toros ante Saraperos y Charros ante Acereros." },
+    { date: "9–21 jun", text: "Bloque interzonal contra los equipos de la Zona Sur." },
+    { date: "26–28 jun", text: "Juego de Estrellas en el Walmart Park de Monterrey." },
+    { date: "6 ago", text: "Fin del rol regular: 93 juegos por equipo." },
+    { date: "8 ago – 15 sep", text: "Playoffs. Toros de Tijuana, campeones de la Serie del Rey (su tercer título)." },
+  ],
+  // Tabla final del rol regular (G, P).
+  standings: [
+    ["Toros", 60, 31], ["Caliente", 51, 42], ["Sultanes", 49, 44], ["Acereros", 48, 45],
+    ["Charros", 48, 45], ["Algodoneros", 46, 47], ["Rieleros", 42, 47], ["Saraperos", 38, 55],
+    ["Tecos", 36, 57], ["Dorados", 35, 58],
+  ],
+};
+
 const SCHEDULE = [
-  { day: "Miércoles, 12 de Agosto", games: [
-    { a: "Caliente", b: "Acereros", time: "19:45" },
-    { a: "Sultanes", b: "Charros", time: "19:30" },
-    { a: "Toros", b: "Algodoneros", time: "19:30" },
-    { a: "Dorados", b: "Rieleros", time: "19:15" },
-    { a: "Saraperos", b: "Tecos", time: "20:00" },
+  { date: "2026-08-08", stage: "Primer Playoff", games: [
+    { a: "Algodoneros", b: "Toros", ra: 2, rb: 5 },
+    { a: "Acereros", b: "Caliente", ra: 12, rb: 6 },
   ]},
-  { day: "Jueves, 13 de Agosto", games: [
-    { a: "Acereros", b: "Saraperos", time: "19:00" },
-    { a: "Charros", b: "Toros", time: "20:30" },
-    { a: "Algodoneros", b: "Dorados", time: "19:30" },
-    { a: "Rieleros", b: "Caliente", time: "19:00" },
-    { a: "Tecos", b: "Sultanes", time: "19:30" },
+  { date: "2026-08-09", stage: "Primer Playoff", games: [
+    { a: "Algodoneros", b: "Toros", ra: 8, rb: 2 },
+    { a: "Acereros", b: "Caliente", ra: 3, rb: 9 },
+    { a: "Charros", b: "Sultanes", ra: 1, rb: 3 },
   ]},
-  { day: "Viernes, 14 de Agosto", games: [
-    { a: "Sultanes", b: "Toros", time: "19:30" },
-    { a: "Dorados", b: "Caliente", time: "19:15" },
-    { a: "Rieleros", b: "Charros", time: "19:00" },
-    { a: "Tecos", b: "Acereros", time: "20:00" },
-    { a: "Algodoneros", b: "Saraperos", time: "19:30" },
+  { date: "2026-08-10", stage: "Primer Playoff", games: [
+    { a: "Charros", b: "Sultanes", ra: 2, rb: 3 },
   ]},
+  { date: "2026-08-11", stage: "Primer Playoff", games: [
+    { a: "Toros", b: "Algodoneros", ra: 9, rb: 3 },
+    { a: "Caliente", b: "Acereros", ra: 7, rb: 0 },
+  ]},
+  { date: "2026-08-12", stage: "Primer Playoff", games: [
+    { a: "Toros", b: "Algodoneros", ra: 4, rb: 0 },
+    { a: "Caliente", b: "Acereros", ra: 7, rb: 2 },
+    { a: "Sultanes", b: "Charros", ra: 6, rb: 3 },
+  ]},
+  { date: "2026-08-13", stage: "Primer Playoff", games: [
+    { a: "Toros", b: "Algodoneros", ra: 12, rb: 6 },
+    { a: "Caliente", b: "Acereros", ra: 10, rb: 1 },
+    { a: "Sultanes", b: "Charros", ra: 5, rb: 15 },
+  ]},
+  { date: "2026-08-14", stage: "Primer Playoff", games: [
+    { a: "Sultanes", b: "Charros", ra: 6, rb: 5 },
+  ]},
+  { date: "2026-08-18", stage: "Serie de Zona", games: [
+    { a: "Charros", b: "Toros", ra: 0, rb: 4 },
+    { a: "Sultanes", b: "Caliente", ra: 6, rb: 2 },
+  ]},
+  { date: "2026-08-19", stage: "Serie de Zona", games: [
+    { a: "Charros", b: "Toros", ra: 5, rb: 3, extra: 11 },
+    { a: "Sultanes", b: "Caliente", ra: 5, rb: 17 },
+  ]},
+  { date: "2026-08-21", stage: "Serie de Zona", games: [
+    { a: "Toros", b: "Charros", ra: 2, rb: 1 },
+    { a: "Caliente", b: "Sultanes", ra: 7, rb: 8, extra: 14 },
+  ]},
+  { date: "2026-08-22", stage: "Serie de Zona", games: [
+    { a: "Toros", b: "Charros", ra: 7, rb: 2 },
+    { a: "Caliente", b: "Sultanes", ra: 0, rb: 3 },
+  ]},
+  { date: "2026-08-23", stage: "Serie de Zona", games: [
+    { a: "Toros", b: "Charros", ra: 3, rb: 2, extra: 10 },
+    { a: "Caliente", b: "Sultanes", ra: 6, rb: 8 },
+  ]},
+  { date: "2026-08-28", stage: "Campeonato Zona Norte", games: [{ a: "Sultanes", b: "Toros", ra: 0, rb: 2 }] },
+  { date: "2026-08-29", stage: "Campeonato Zona Norte", games: [{ a: "Sultanes", b: "Toros", ra: 4, rb: 0 }] },
+  { date: "2026-08-31", stage: "Campeonato Zona Norte", games: [{ a: "Toros", b: "Sultanes", ra: 6, rb: 5, extra: 11 }] },
+  { date: "2026-09-01", stage: "Campeonato Zona Norte", games: [{ a: "Toros", b: "Sultanes", ra: 15, rb: 7 }] },
+  { date: "2026-09-02", stage: "Campeonato Zona Norte", games: [{ a: "Toros", b: "Sultanes", ra: 10, rb: 1 }] },
+  { date: "2026-09-08", stage: "Serie del Rey", games: [{ a: "Olmecas", b: "Toros", ra: 7, rb: 1 }] },
+  { date: "2026-09-09", stage: "Serie del Rey", games: [{ a: "Olmecas", b: "Toros", ra: 2, rb: 13 }] },
+  { date: "2026-09-11", stage: "Serie del Rey", games: [{ a: "Toros", b: "Olmecas", ra: 2, rb: 0 }] },
+  { date: "2026-09-12", stage: "Serie del Rey", games: [{ a: "Toros", b: "Olmecas", ra: 1, rb: 9 }] },
+  { date: "2026-09-13", stage: "Serie del Rey", games: [{ a: "Toros", b: "Olmecas", ra: 6, rb: 5 }] },
+  { date: "2026-09-15", stage: "Serie del Rey", games: [{ a: "Olmecas", b: "Toros", ra: 0, rb: 2 }] },
 ];
 
 // Videos reales de la temporada 2026 de la LMB (Zona Norte), enlazados a YouTube.
