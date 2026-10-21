@@ -16,6 +16,15 @@ const TEAMS = [
   { id: "dorados", name: "Dorados", city: "Chihuahua, Chihuahua", stadium: "Estadio Monumental Chihuahua", nickname: "Villistas", capacity: "14,500 personas", color: "#6a2382", abbr: "DO", logo: "Assets/Dorados_de_Chihuahua_baseball_logo.png" },
 ];
 
+// Modelo 3D del AR (Assets/models): la gorra de cada equipo. La de Sultanes
+// se sacó del diorama original (diorama.glb, en la carpeta del proyecto).
+// modelYaw: giro inicial en grados sobre el eje vertical; en los .glb la
+// visera apunta a -X, y con 90° queda de frente a la cámara.
+TEAMS.forEach(t => {
+  t.model = `Assets/models/${t.id}only.glb`;
+  t.modelYaw = 90;
+});
+
 // Jugadores por equipo. Sultanes usa la alineación mostrada en el mockup
 // original; el resto son jugadores de ejemplo (ficticios) con el mismo formato.
 const PLAYERS = {

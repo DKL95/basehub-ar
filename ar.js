@@ -63,7 +63,7 @@ const Ar = (() => {
     // Ancho del trofeo (en sus propias unidades) que equivale al ancho del
     // logo: con 2.1 el trofeo mide ~1.4 veces el logo, igual que con los QR.
     const TROPHY_WIDTH = 2.1;
-    const modelCache = new Map(); // url -> Promise<gltf>
+    const modelCache = new Map(); // url -> Promise<{ holder, animations }>
 
     function setStatus(msg, isError) {
       if (statusEl) statusEl.textContent = msg || "";
@@ -249,6 +249,9 @@ const Ar = (() => {
         try {
           const { holder, animations } = await loadModel(team.model);
           if (currentIndex !== index) return; // se cambió de logo mientras cargaba
+          // Empieza de frente (modelYaw) y gira sobre su eje mientras se ve.
+          holder.rotation.y = THREE.MathUtils.degToRad(team.modelYaw || 0);
+          spinTarget = holder;
           content.add(holder);
           if (animations.length) {
             mixer = new THREE.AnimationMixer(holder);
@@ -285,6 +288,11 @@ const Ar = (() => {
         maxTrack: 1,
         warmupTolerance: 3,
         missTolerance: 6,
+        // Filtro One Euro de la pose. Con los valores de fábrica (beta 1000)
+        // casi no suaviza y el modelo tiembla; estos son los que recomienda
+        // MindAR contra la vibración, a cambio de un poco de retraso.
+        filterMinCF: 0.0001,
+        filterBeta: 0.001,
         onUpdate: onTrackerUpdate,
       });
       const { dimensions } = await controller.addImageTargets(TARGETS_MIND);
