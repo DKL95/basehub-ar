@@ -707,3 +707,56 @@ button.badge-earned { border: none; cursor: pointer; font-family: inherit; color
 .badge-viewer-hint { font-size: 11px; color: #8d94a0; margin-top: 6px; }
 .badge-viewer-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
 .badge-viewer-actions .btn.ghost { background: transparent; color: #fff; border-color: #fff; }
+
+/* ---------- Galería: fotos AR ---------- */
+.photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px 16px 20px; }
+.photo-cell {
+  display: flex; flex-direction: column; padding: 0; border: 1px solid #eee; border-radius: 12px;
+  overflow: hidden; background: #fff; cursor: pointer; font-family: inherit; color: var(--text); text-align: left;
+}
+.photo-cell img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; background: #111; }
+.photo-cell span { padding: 6px 8px 7px; font-size: 11px; line-height: 1.3; color: var(--muted); }
+.photo-cell span b { display: block; color: var(--text); font-size: 12px; }
+.photo-empty { grid-column: 1 / -1; text-align: center; padding: 26px 18px; background: #fafafa; border-radius: 14px; }
+.photo-empty .emoji { font-size: 40px; margin-bottom: 6px; }
+.photo-empty p { font-size: 12.5px; color: var(--muted); margin: 6px 0 14px; line-height: 1.5; }
+
+.photo-viewer {
+  position: absolute; inset: 0; z-index: 70; background: rgba(0,0,0,.85);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.photo-viewer[hidden] { display: none; }
+.photo-viewer-inner { width: 100%; text-align: center; }
+.photo-viewer-inner img { width: 100%; max-height: 560px; object-fit: contain; border-radius: 12px; background: #000; }
+.photo-viewer-meta { color: #fff; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.photo-viewer-meta span { color: #bbb; font-size: 11.5px; }
+.photo-viewer-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.photo-viewer-actions .btn { padding: 9px 14px; font-size: 13px; }
+#photoDeleteBtn.confirm { background: #d33; border-color: #d33; color: #fff; }
+
+/* ---------- Botón y ventana de ayuda "?" ---------- */
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.help-btn {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; background: none;
+  color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; line-height: 1; padding: 0;
+  font-family: inherit;
+}
+.help-btn:active { background: rgba(255,255,255,.2); }
+.help-sheet {
+  position: absolute; inset: 0; z-index: 80; background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-end; animation: fadeIn .18s ease;
+}
+.help-sheet[hidden] { display: none; }
+.help-card {
+  width: 100%; max-height: 80%; overflow-y: auto; background: #fff;
+  border-radius: 20px 20px 0 0; padding: 18px 18px 22px;
+}
+.help-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.help-head h3 { flex: 1; margin: 0; font-size: 16px; }
+.help-icon {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; background: var(--green);
+  color: #08240c; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.help-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+.help-body ol { margin: 0 0 16px; padding-left: 20px; }
+.help-body li { font-size: 13.5px; line-height: 1.55; margin-bottom: 8px; }

@@ -48,12 +48,14 @@ function goTo(screen) {
   document.querySelectorAll(".tabbar button").forEach(b => b.classList.toggle("active", b.dataset.nav === screen));
 
   closeDrawer();
+  Help.close();
+  closePhotoViewer();
   if (typeof Badges3D !== "undefined" && Badges3D) Badges3D.close();
 
   if (screen === "jugadores") renderRoster();
   if (screen === "calendario") renderCalendario();
   if (screen === "trivia") renderTriviaList();
-  if (screen === "galeria") renderBadges();
+  if (screen === "galeria") { renderBadges(); renderPhotos(); }
   if (screen === "ar-select") Ar.renderTargetGrid();
   if (screen === "ar-live") Ar.enterLive();
   if (screen !== "player") { VideoFilters.stop(); closeEmbed(); }
@@ -522,7 +524,7 @@ function videoCardHTML(v, cat, idx) {
     <div class="video-title">${v.title}</div>
     <div class="video-sub">Toca para verlo con filtros 🎛️</div>`;
 }
-// Pestañas de Galería: videos e insignias de trivia.
+// Pestañas de Galería: videos, insignias de trivia y fotos tomadas en AR.
 function setGalleryTab(tab) {
   document.querySelectorAll("#galleryTabs button").forEach(b => b.classList.toggle("active", b.dataset.galleryTab === tab));
   document.querySelectorAll("[data-gallery-panel]").forEach(p => { p.hidden = p.dataset.galleryPanel !== tab; });
@@ -557,6 +559,78 @@ function renderBadges() {
 document.getElementById("badgeGrid").addEventListener("click", (e) => {
   const cell = e.target.closest("[data-badge-view]");
   if (cell) openBadgeViewer(Number(cell.dataset.badgeView));
+});
+
+// Fotos AR (guardadas por photos.js). Las miniaturas usan URLs de objeto que
+// se liberan cada vez que se vuelve a pintar la cuadrícula.
+let photoUrls = [];
+let photoList = [];
+let viewerPhoto = null;
+function renderPhotos() {
+  return ArPhotos.list().then((photos) => {
+    photoUrls.forEach(u => URL.revokeObjectURL(u));
+    photoList = photos;
+    photoUrls = photos.map(p => URL.createObjectURL(p.blob));
+    document.getElementById("photoSummary").innerHTML = photos.length
+      ? `<span><b>${photos.length}</b> foto${photos.length === 1 ? "" : "s"} guardada${photos.length === 1 ? "" : "s"}</span>`
+      : "";
+    document.getElementById("photoGrid").innerHTML = photos.length
+      ? photos.map((p, i) => `<button class="photo-cell" data-photo="${i}">
+          <img src="${photoUrls[i]}" alt="Foto AR ${p.teamName}" />
+          <span><b>${p.teamName}</b>${new Date(p.date).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" })}</span>
+        </button>`).join("")
+      : `<div class="photo-empty">
+          <div class="emoji">📷</div>
+          <b>Aún no tienes fotos</b>
+          <p>Escanea el logo de un equipo y toca 📸 Foto para guardar tu primera foto aquí.</p>
+          <button class="btn" data-nav="ar-select">Ir a Realidad Aumentada</button>
+        </div>`;
+  });
+}
+function photoDate(ts) {
+  return new Date(ts).toLocaleString("es-MX", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+function openPhotoViewer(i) {
+  viewerPhoto = photoList[i];
+  document.getElementById("photoViewerImg").src = photoUrls[i];
+  document.getElementById("photoViewerMeta").innerHTML = `<b>${viewerPhoto.teamName}</b><span>${photoDate(viewerPhoto.date)}</span>`;
+  resetDeleteBtn();
+  document.getElementById("photoViewer").hidden = false;
+}
+function closePhotoViewer() {
+  document.getElementById("photoViewer").hidden = true;
+  viewerPhoto = null;
+}
+// Borrar pide un segundo toque en vez de un diálogo del navegador.
+function resetDeleteBtn() {
+  const b = document.getElementById("photoDeleteBtn");
+  b.classList.remove("confirm");
+  b.textContent = "🗑 Borrar";
+}
+document.getElementById("photoGrid").addEventListener("click", (e) => {
+  const cell = e.target.closest("[data-photo]");
+  if (cell) openPhotoViewer(Number(cell.dataset.photo));
+});
+document.getElementById("photoCloseBtn").addEventListener("click", closePhotoViewer);
+document.getElementById("photoViewer").addEventListener("click", (e) => {
+  if (e.target.id === "photoViewer") closePhotoViewer();
+});
+document.getElementById("photoDownloadBtn").addEventListener("click", () => {
+  if (viewerPhoto) ArPhotos.exportPhoto(viewerPhoto.blob, viewerPhoto.name);
+});
+document.getElementById("photoDeleteBtn").addEventListener("click", (e) => {
+  if (!viewerPhoto) return;
+  const b = e.currentTarget;
+  if (!b.classList.contains("confirm")) {
+    b.classList.add("confirm");
+    b.textContent = "¿Borrar? Toca otra vez";
+    return;
+  }
+  ArPhotos.remove(viewerPhoto.id).then(() => {
+    closePhotoViewer();
+    renderPhotos();
+    toast("Foto borrada");
+  });
 });
 
 function renderGaleria() {

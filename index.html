@@ -22,7 +22,10 @@
   <div class="topbar">
     <button class="icon-btn" id="menuBtn" aria-label="Menú">☰</button>
     <div class="brand">BASE-HUB</div>
-    <button class="ar-pill" data-nav="ar-select">AR</button>
+    <div class="topbar-right">
+      <button class="help-btn" id="helpBtn" aria-label="Ayuda de esta pantalla">?</button>
+      <button class="ar-pill" data-nav="ar-select">AR</button>
+    </div>
   </div>
 
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
@@ -165,6 +168,7 @@
       <div class="gallery-tabs" id="galleryTabs">
         <button class="active" data-gallery-tab="videos">🎬 Videos</button>
         <button data-gallery-tab="insignias">🏅 Insignias</button>
+        <button data-gallery-tab="fotos">📸 Fotos AR</button>
       </div>
       <div data-gallery-panel="videos">
         <p class="lead pad-h">Toca un video para verlo aquí mismo y aplicarle filtros de procesamiento de imagen en vivo.</p>
@@ -177,6 +181,11 @@
         <p class="lead pad-h">Completa cada trivia para ganar su insignia 3D: oro con 5/5, plata con 3 o 4 aciertos y bronce con menos. Toca una para verla en 3D.</p>
         <div id="badgeSummary"></div>
         <div class="badge-grid" id="badgeGrid"></div>
+      </div>
+      <div data-gallery-panel="fotos" hidden>
+        <p class="lead pad-h">Aquí se guardan las fotos que tomas con el botón 📸 Foto en la Realidad Aumentada. Toca una para verla, descargarla o borrarla.</p>
+        <div id="photoSummary" class="badge-summary-row"></div>
+        <div class="photo-grid" id="photoGrid"></div>
       </div>
       <div id="footerGaleria"></div>
     </section>
@@ -289,6 +298,30 @@
 
   <div class="toast" id="toast"></div>
 
+  <div class="photo-viewer" id="photoViewer" hidden>
+    <div class="photo-viewer-inner">
+      <img id="photoViewerImg" alt="Foto AR" />
+      <div class="photo-viewer-meta" id="photoViewerMeta"></div>
+      <div class="photo-viewer-actions">
+        <button class="btn sm" id="photoDownloadBtn" type="button">⬇ Descargar</button>
+        <button class="btn ghost sm" id="photoDeleteBtn" type="button">🗑 Borrar</button>
+        <button class="btn ghost sm" id="photoCloseBtn" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-sheet" id="helpSheet" hidden>
+    <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="help-head">
+        <span class="help-icon">?</span>
+        <h3 id="helpTitle"></h3>
+        <button class="help-close" id="helpClose" type="button" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="help-body" id="helpBody"></div>
+      <button class="btn block" id="helpOk" type="button">Entendido</button>
+    </div>
+  </div>
+
   <div class="qr-lightbox" id="qrLightbox">
     <div class="qr-lightbox-inner">
       <img id="qrLightboxImg" src="" alt="" />
@@ -307,6 +340,8 @@
 <script src="trivias.js"></script>
 <script src="filters.js"></script>
 <script src="sounds.js"></script>
+<script src="photos.js"></script>
+<script src="help.js"></script>
 <script src="ar.js"></script>
 <script src="app.js"></script>
 </body>

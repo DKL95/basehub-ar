@@ -601,7 +601,7 @@ const Ar = (() => {
 
     // Foto: junta en un lienzo lo que se ve en la ventana AR (la cámara o la
     // foto subida, recortada igual que con object-fit: cover, y encima el
-    // modelo 3D) y la guarda en el teléfono.
+    // modelo 3D) y la guarda en la Galería de la app (photos.js).
     function actionPhoto(team) {
       const W = canvasEl.width, H = canvasEl.height;
       const out = document.createElement("canvas");
@@ -638,35 +638,9 @@ const Ar = (() => {
       const name = `basehub-${team.id}-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-")}.jpg`;
       out.toBlob((blob) => {
         if (!blob) { toast("No se pudo tomar la foto"); return; }
-        savePhoto(blob, name);
+        ArPhotos.add({ blob, name, teamId: team.id, teamName: team.name })
+          .then(() => toast("Foto guardada en Galería → Fotos AR 📸"));
       }, "image/jpeg", 0.92);
-    }
-
-    // En iPhone/iPad una descarga va a la app Archivos; con la hoja de
-    // compartir se puede elegir "Guardar imagen" y queda en Fotos. En los
-    // demás teléfonos se descarga directo.
-    function savePhoto(blob, name) {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-      const file = new File([blob], name, { type: "image/jpeg" });
-      if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: "Base-Hub AR" })
-          .then(() => toast("Foto guardada 📸"))
-          .catch((err) => { if (err.name !== "AbortError") downloadPhoto(blob, name); });
-        return;
-      }
-      downloadPhoto(blob, name);
-    }
-
-    function downloadPhoto(blob, name) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-      toast("Foto descargada 📸");
     }
 
     // Diorama: alterna entre la gorra sola y la gorra puesta en la estatua. La
