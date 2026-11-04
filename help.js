@@ -57,7 +57,6 @@ const HELP = {
       "Toca una <b>etapa</b> (Primer Playoff, Serie de Zona, Campeonato Zona Norte o Serie del Rey) para saltar a su primer día.",
       "Usa las flechas ‹ › para ir al día anterior o al siguiente. El equipo ganador aparece resaltado; F/11 significa que el juego se fue a 11 entradas.",
       "Más abajo está la tabla final del rol regular y las fechas clave de la temporada.",
-      "Escribe tu correo y toca <b>Vuélvete miembro</b> para recibir avisos de los partidos.",
     ],
   },
   trivia: {

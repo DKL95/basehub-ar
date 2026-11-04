@@ -115,7 +115,7 @@ function renderNewsCarousel() {
     <p class="nc-body">${n.body}</p>`;
 
   document.getElementById("newsDots").innerHTML = items.map((_, i) =>
-    `<span class="${i === state.newsIndex ? "active" : ""}"></span>`).join("");
+    `<span class="${i === state.newsIndex ? "active" : ""}" data-news-dot="${i}" role="button" aria-label="Noticia ${i + 1}"></span>`).join("");
 
   document.getElementById("newsPrev").addEventListener("click", () => {
     state.newsIndex = (state.newsIndex - 1 + items.length) % items.length;
@@ -125,20 +125,32 @@ function renderNewsCarousel() {
     state.newsIndex = (state.newsIndex + 1) % items.length;
     renderNewsCarousel();
   });
+}
 
+// Deslizar el carrusel y tocar los puntos. Se registran una sola vez: si se
+// agregaran en cada renderNewsCarousel() se acumularían y un solo deslizamiento
+// avanzaría varias noticias (con 2 noticias, el carrusel dejaba de moverse).
+(() => {
   const track = document.getElementById("newsCarousel");
   let touchStartX = null;
   track.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
   track.addEventListener("touchend", (e) => {
     if (touchStartX === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
+    touchStartX = null;
     if (Math.abs(dx) > 40) {
-      state.newsIndex = (state.newsIndex + (dx < 0 ? 1 : -1) + items.length) % items.length;
+      const n = newsCarouselItems().length;
+      state.newsIndex = (state.newsIndex + (dx < 0 ? 1 : -1) + n) % n;
       renderNewsCarousel();
     }
-    touchStartX = null;
   });
-}
+  document.getElementById("newsDots").addEventListener("click", (e) => {
+    const dot = e.target.closest("[data-news-dot]");
+    if (!dot) return;
+    state.newsIndex = Number(dot.dataset.newsDot);
+    renderNewsCarousel();
+  });
+})();
 
 /* ---------------- HISTORIA ---------------- */
 function renderHistoria() {
@@ -315,12 +327,6 @@ document.getElementById("prevDay").addEventListener("click", () => {
 document.getElementById("nextDay").addEventListener("click", () => {
   state.dayIndex = (state.dayIndex + 1) % SCHEDULE.length;
   renderCalendario();
-});
-document.getElementById("newsletterBtn").addEventListener("click", () => {
-  const val = document.getElementById("newsletterEmail").value.trim();
-  if (!val) toast("Escribe tu correo primero.");
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) toast("Ese correo no parece válido.");
-  else toast("¡Listo! Te avisaremos de cada partido.");
 });
 
 /* ---------------- TRIVIA ---------------- */
