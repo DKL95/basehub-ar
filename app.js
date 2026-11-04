@@ -28,9 +28,6 @@ function footerHTML() {
   return `
   <footer class="site-footer">
     <div class="brand">Basehub</div>
-    <div class="socials">
-      <span>f</span><span>in</span><span>▶</span><span>◎</span>
-    </div>
   </footer>`;
 }
 
@@ -166,6 +163,33 @@ function renderQuienes() {
   document.getElementById("faqList").innerHTML = FAQ.map(f => `
     <div class="faq-item"><h4>${f.q}</h4><p>${f.a}</p></div>`).join("");
   document.getElementById("footerQuienes").innerHTML = footerHTML();
+}
+
+/* ---------------- CRÉDITOS ---------------- */
+// Fuentes del contenido de terceros (el reglamento pide indicarlas).
+function renderCreditos() {
+  const videos = [...VIDEOS.informativos, ...VIDEOS.liga];
+  const sections = [
+    { title: "Información de la liga", items: [
+      "Noticias, equipos y estadísticas: Liga Mexicana de Béisbol (lmb.com.mx).",
+      "Calendario, resultados y tabla de la temporada 2026: Wikipedia, “Liga Mexicana de Béisbol 2026”, y comunicados de la liga.",
+    ] },
+    { title: "Logos e imágenes", items: [
+      "Los logos de los equipos son marcas registradas de cada club y de la Liga Mexicana de Béisbol; se usan solo con fines educativos.",
+      "Fotografías de noticias y de “¿Quiénes somos?”: Liga Mexicana de Béisbol y clubes correspondientes.",
+    ] },
+    { title: "Videos (YouTube)", items: videos.map(v => `<a href="${v.youtube}" target="_blank" rel="noopener">${v.title}</a> — canal ${v.channel}`) },
+    { title: "Librerías", items: [
+      "three.js r160 — escena y modelos 3D (licencia MIT, © three.js authors).",
+      "MindAR — reconocimiento y seguimiento de imágenes (licencia MIT, © HiuKim Yuen).",
+    ] },
+    { title: "Contenido propio", items: [
+      "Modelos 3D de las gorras y del diorama, insignias 3D, sonidos de estadio (generados con WebAudio), trivias, filtros de video, diseño e interfaz: elaboración propia del equipo de Base-Hub.",
+    ] },
+  ];
+  document.getElementById("creditsList").innerHTML = sections.map(s => `
+    <div class="faq-item credits-item"><h4>${s.title}</h4><ul>${s.items.map(i => `<li>${i}</li>`).join("")}</ul></div>`).join("");
+  document.getElementById("footerCreditos").innerHTML = footerHTML();
 }
 
 /* ---------------- EQUIPOS ---------------- */
@@ -796,6 +820,7 @@ document.getElementById("ownVideoInput").addEventListener("change", (e) => {
 renderHome();
 renderHistoria();
 renderQuienes();
+renderCreditos();
 renderEquipos();
 renderGaleria();
 goTo("home");

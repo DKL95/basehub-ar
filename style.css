@@ -40,6 +40,7 @@ body {
   box-shadow: 0 30px 60px rgba(0,0,0,.35);
   position: relative;
   overflow: hidden;
+  overflow: clip; /* evita que scrollIntoView/foco desplacen el marco y suban la barra inferior */
   display: flex;
   flex-direction: column;
 }
@@ -122,6 +123,8 @@ body {
   overflow-x: hidden;
   position: relative;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; /* el scroll no se "encadena" al body */
+  min-height: 0;
 }
 .screen { display: none; padding-bottom: 90px; }
 .screen.active { display: block; animation: fadeIn .18s ease; }
@@ -241,11 +244,6 @@ footer.site-footer {
   margin-top: 18px;
 }
 footer.site-footer .brand { font-weight: 800; font-size: 17px; }
-footer.site-footer .socials { display: flex; gap: 10px; margin-top: 14px; }
-footer.site-footer .socials span {
-  width: 30px; height: 30px; border-radius: 50%; background: #16321a; color: #fff;
-  display: flex; align-items: center; justify-content: center; font-size: 13px;
-}
 
 /* Historia timeline */
 .history-title { text-align: center; padding: 20px 10px 6px; }
@@ -677,8 +675,17 @@ table.standings tr.qualified td { background: #eef9ef; }
 ::-webkit-scrollbar { width: 0; height: 0; }
 
 @media (max-width: 430px) {
-  body { padding: 0; }
-  .phone { width: 100vw; height: 100vh; max-height: 100dvh; border-radius: 0; border: none; }
+  /* En móvil 100vh incluye la zona de la barra del navegador: la app quedaba más
+     alta que la pantalla y al hacer scroll se movía todo (incluida la barra de
+     iconos). Se fija el marco al viewport visible y se bloquea el scroll del body. */
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body { padding: 0; min-height: 0; }
+  .phone {
+    position: fixed; inset: 0;
+    width: 100%; max-width: none;
+    height: 100vh; height: 100dvh; max-height: none;
+    border-radius: 0; border: none;
+  }
   .phone::before { display: none; }
 }
 
@@ -760,3 +767,8 @@ button.badge-earned { border: none; cursor: pointer; font-family: inherit; color
 .help-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
 .help-body ol { margin: 0 0 16px; padding-left: 20px; }
 .help-body li { font-size: 13.5px; line-height: 1.55; margin-bottom: 8px; }
+
+/* ---------- Créditos ---------- */
+.credits-item ul { margin: 0; padding-left: 18px; }
+.credits-item li { font-size: 13px; line-height: 1.5; margin-bottom: 5px; }
+.credits-item a { color: var(--green-dark); }

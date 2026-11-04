@@ -177,18 +177,19 @@ const SCHEDULE = [
 // (p. ej. src: "Assets/videos/ranking.mp4"). Los videos de YouTube no se
 // pueden filtrar: el navegador no permite leer los píxeles de su reproductor.
 // Sin `src` se muestra una escena animada de demostración.
+// `channel` es el canal de YouTube del video (se acredita en Créditos).
 const VIDEOS = {
   informativos: [
-    { title: "Los mejores jugadores de la liga: ranking.", hue: 140, youtube: "https://www.youtube.com/watch?v=g83zZzIovfE" },
-    { title: "Los mejores bateos de la temporada", hue: 20, youtube: "https://www.youtube.com/watch?v=Re8OFw7TRmo" },
-    { title: "Mira el lineup para el juego de estrellas", hue: 210, youtube: "https://www.youtube.com/watch?v=vKUFPoQhw3A" },
-    { title: "Los mejores picheos de la liga", hue: 90, youtube: "https://www.youtube.com/watch?v=1V8DIZbBdEQ" },
+    { title: "Los mejores jugadores de la liga: ranking.", hue: 140, youtube: "https://www.youtube.com/watch?v=g83zZzIovfE", channel: "EL FANATICO DEL DEPORTE" },
+    { title: "Los mejores bateos de la temporada", hue: 20, youtube: "https://www.youtube.com/watch?v=Re8OFw7TRmo", channel: "ESPN MX" },
+    { title: "Mira el lineup para el juego de estrellas", hue: 210, youtube: "https://www.youtube.com/watch?v=vKUFPoQhw3A", channel: "Claro Sports" },
+    { title: "Los mejores picheos de la liga", hue: 90, youtube: "https://www.youtube.com/watch?v=1V8DIZbBdEQ", channel: "Liga Mexicana de Beisbol Banorte" },
   ],
   liga: [
-    { title: "Highlights partido Sultanes vs Dorados", hue: 260, youtube: "https://www.youtube.com/watch?v=oIrc-OpKwvg" },
-    { title: "Los mejores outs de la temporada", hue: 0, youtube: "https://www.youtube.com/watch?v=f6J4SF9ru0A" },
-    { title: "Los Sultanes hacen historia en la temporada", hue: 190, youtube: "https://www.youtube.com/watch?v=5FTNPGs6Les" },
-    { title: "Aprende a pichar con Gabriel Ponce", hue: 45, youtube: "https://www.youtube.com/watch?v=gv8LDvy-m-s" },
+    { title: "Highlights partido Sultanes vs Dorados", hue: 260, youtube: "https://www.youtube.com/watch?v=oIrc-OpKwvg", channel: "ESPN MX" },
+    { title: "Los mejores outs de la temporada", hue: 0, youtube: "https://www.youtube.com/watch?v=f6J4SF9ru0A", channel: "Liga Mexicana de Beisbol Banorte" },
+    { title: "Los Sultanes hacen historia en la temporada", hue: 190, youtube: "https://www.youtube.com/watch?v=5FTNPGs6Les", channel: "Liga Mexicana de Beisbol Banorte" },
+    { title: "Aprende a pichar con Gabriel Ponce", hue: 45, youtube: "https://www.youtube.com/watch?v=gv8LDvy-m-s", channel: "Niall O'Donohoe" },
   ],
 };
 

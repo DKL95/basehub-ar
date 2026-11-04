@@ -26,6 +26,13 @@ const HELP = {
       "Desliza hacia abajo para recorrer las fechas en orden.",
     ],
   },
+  creditos: {
+    title: "Créditos y fuentes",
+    steps: [
+      "Aquí se indica de dónde viene el contenido que no es nuestro: datos de la liga, logos, fotos, videos y librerías.",
+      "Toca el nombre de un video para abrirlo en YouTube.",
+    ],
+  },
   equipos: {
     title: "Equipos",
     steps: [
