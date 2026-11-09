@@ -35,6 +35,7 @@ function footerHTML() {
 function goTo(screen) {
   const prevScreen = document.querySelector(".screen.active")?.dataset.screen;
   if (prevScreen === "ar-live" && screen !== "ar-live") Ar.leaveLive();
+  if (prevScreen === "batazo" && screen !== "batazo") Batazo.leave();
 
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   const target = document.querySelector(`.screen[data-screen="${screen}"]`);
@@ -52,7 +53,8 @@ function goTo(screen) {
   if (screen === "jugadores") renderRoster();
   if (screen === "calendario") renderCalendario();
   if (screen === "trivia") renderTriviaList();
-  if (screen === "galeria") { renderBadges(); renderPhotos(); }
+  if (screen === "batazo") Batazo.enter();
+  if (screen === "galeria") { renderBadges(); renderTrophies(); renderPhotos(); }
   if (screen === "ar-select") Ar.renderTargetGrid();
   if (screen === "ar-live") Ar.enterLive();
   if (screen !== "player") { VideoFilters.stop(); closeEmbed(); }
@@ -196,7 +198,7 @@ function renderCreditos() {
       "MindAR — reconocimiento y seguimiento de imágenes (licencia MIT, © HiuKim Yuen).",
     ] },
     { title: "Contenido propio", items: [
-      "Modelos 3D de las gorras y del diorama, insignias 3D, sonidos de estadio (generados con WebAudio), trivias, filtros de video, diseño e interfaz: elaboración propia del equipo de Base-Hub.",
+      "Modelos 3D de las gorras y del diorama, insignias y trofeos 3D, minijuego Batazo, sonidos de estadio (generados con WebAudio), trivias, filtros de video, diseño e interfaz: elaboración propia del equipo de Base-Hub.",
     ] },
   ];
   document.getElementById("creditsList").innerHTML = sections.map(s => `
@@ -404,6 +406,82 @@ document.body.addEventListener("click", (e) => {
   goTo("trivia");
   startTrivia(Number(play.dataset.viewerPlay));
 });
+// Trofeos de Batazo: medalla 3D con el logo del equipo. El logo se carga como
+// imagen antes de generar la miniatura (badges3d la dibuja en una textura).
+const teamLogoImgs = {};
+function teamLogoImg(team) {
+  if (!teamLogoImgs[team.id]) {
+    teamLogoImgs[team.id] = new Promise((resolve) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = () => resolve(null);
+      im.src = team.logo;
+    });
+  }
+  return teamLogoImgs[team.id];
+}
+async function trophyOpts(teamId) {
+  const team = TEAMS.find(t => t.id === teamId);
+  const best = Batazo.scores()[teamId]?.best || 0;
+  return { emblem: "logo", logo: team.logo, logoImg: await teamLogoImg(team), accent: team.color,
+    tier: Batazo.tierOf(best).id, accentIndex: 0, name: team.name };
+}
+async function paintTrophyImages() {
+  const m = Badges3D || await loadBadges3D();
+  if (!m) return;
+  for (const el of document.querySelectorAll("[data-trophy-img]")) {
+    const opts = await trophyOpts(el.dataset.trophyImg);
+    el.innerHTML = `<img src="${m.thumb(opts, el.classList.contains("big") ? 320 : 192)}" alt="Trofeo ${opts.name}" />`;
+    el.classList.add("is-3d");
+  }
+}
+async function openTrophyViewer(teamId, subtitle) {
+  const m = Badges3D || await loadBadges3D();
+  if (!m) return;
+  const opts = await trophyOpts(teamId);
+  const s = Batazo.scores()[teamId];
+  const best = s?.best || 0, tier = Batazo.tierOf(best);
+  m.open(opts, {
+    title: `Trofeo ${opts.name}`,
+    subtitle: subtitle || (tier.id === "bloqueada"
+      ? `Bloqueado · haz ${Batazo.UNLOCK} carreras con ${opts.name} en Batazo (mejor: ${best})`
+      : `Batazo · ${tier.label} · mejor: ${best} carreras · ${s.games} partida${s.games === 1 ? "" : "s"}, ${s.hrs} HR`),
+    actionsHTML: `<button class="btn" data-viewer-batazo="${teamId}">Jugar con ${opts.name}</button>`,
+  });
+}
+document.body.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-viewer-batazo]");
+  if (!b) return;
+  Badges3D?.close();
+  Batazo.playWith(b.dataset.viewerBatazo);
+});
+
+function renderTrophies() {
+  const scores = Batazo.scores();
+  const won = TEAMS.filter(t => Batazo.tierOf(scores[t.id]?.best).id !== "bloqueada").length;
+  const count = (id) => TEAMS.filter(t => Batazo.tierOf(scores[t.id]?.best).id === id).length;
+  document.getElementById("trophySummary").innerHTML = `
+    <div class="badge-progress"><div style="width:${(won / TEAMS.length) * 100}%"></div></div>
+    <div class="badge-summary-row">
+      <span><b>${won}</b> / ${TEAMS.length} trofeos</span>
+      <span>🥇 ${count("oro")} &nbsp; 🥈 ${count("plata")} &nbsp; 🥉 ${count("bronce")}</span>
+    </div>`;
+  document.getElementById("trophyGrid").innerHTML = TEAMS.map(t => {
+    const best = scores[t.id]?.best || 0, tier = Batazo.tierOf(best);
+    const locked = tier.id === "bloqueada";
+    return `<button class="badge-cell ${locked ? "locked" : "tier-" + tier.id}" data-trophy-view="${t.id}">
+      <div class="badge-medal" data-trophy-img="${t.id}"><span>${locked ? "🔒" : "🏆"}</span></div>
+      <div class="badge-name">${t.name}</div>
+      <div class="badge-tier-label">${locked ? `Bloqueado · ${best}/${Batazo.UNLOCK}` : `${tier.label} · ${best} carreras`}</div>
+    </button>`;
+  }).join("");
+  paintTrophyImages();
+}
+document.getElementById("trophyGrid").addEventListener("click", (e) => {
+  const cell = e.target.closest("[data-trophy-view]");
+  if (cell) openTrophyViewer(cell.dataset.trophyView);
+});
+
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {

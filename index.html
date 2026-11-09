@@ -39,6 +39,7 @@
       <a data-nav="calendario">Calendario</a>
       <a data-nav="trivia">Trivia</a>
       <a data-nav="galeria">Galería</a>
+      <a data-nav="batazo">Minijuego: Batazo</a>
       <a data-nav="ar-select">Realidad Aumentada</a>
       <a data-nav="creditos">Créditos y fuentes</a>
     </nav>
@@ -85,6 +86,15 @@
         <div style="flex:1">
           <b style="font-size:14px;">No te pierdas ningún partido de la Zona Norte</b>
           <div style="margin-top:8px;"><button class="btn" data-nav="calendario">Ir al calendario de partidos</button></div>
+        </div>
+      </div>
+
+      <div class="minigame-card">
+        <div class="emoji">🏏</div>
+        <div style="flex:1">
+          <b>Minijuego: Batazo</b>
+          <p>Batea los lanzamientos del pitcher rival y anota todas las carreras que puedas.</p>
+          <button class="btn" data-nav="batazo">Jugar</button>
         </div>
       </div>
 
@@ -165,6 +175,11 @@
       <div id="footerTrivia"></div>
     </section>
 
+    <!-- MINIJUEGO: BATAZO -->
+    <section class="screen" data-screen="batazo">
+      <div id="batazoBody"></div>
+    </section>
+
     <!-- GALERIA -->
     <section class="screen" data-screen="galeria">
       <div class="pad" style="padding-bottom:0;">
@@ -184,6 +199,11 @@
       </div>
       <div data-gallery-panel="insignias" hidden>
         <p class="lead pad-h">Completa cada trivia para ganar su insignia 3D: oro con 5/5, plata con 3 o 4 aciertos y bronce con menos. Toca una para verla en 3D.</p>
+        <h2 class="section-title pad-h">🏆 Trofeos de Batazo</h2>
+        <p class="lead pad-h">Uno por equipo: haz 5 carreras en una partida del minijuego Batazo para ganar el trofeo de bronce, 8 para plata y 12 para oro. Toca uno para verlo en 3D.</p>
+        <div id="trophySummary"></div>
+        <div class="badge-grid" id="trophyGrid"></div>
+        <h2 class="section-title pad-h">🏅 Insignias de trivia</h2>
         <div id="badgeSummary"></div>
         <div class="badge-grid" id="badgeGrid"></div>
       </div>
@@ -348,6 +368,7 @@
 <script src="photos.js"></script>
 <script src="help.js"></script>
 <script src="ar.js"></script>
+<script src="batazo.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

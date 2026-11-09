@@ -14,10 +14,11 @@ Aplicación web (PWA) de la **Liga Mexicana de Béisbol – Zona Norte** con Rea
 - **Inicio, ¿Quiénes somos? e Historia del béisbol**: noticias, presentación del proyecto y línea del tiempo.
 - **Equipos y plantillas**: los 10 equipos de la Zona Norte con estadísticas de temporada y carrera de cada jugador.
 - **Calendario**: resultados de la postemporada 2026, tabla final del rol regular y fechas clave.
+- **Minijuego Batazo**: juego de bateo en canvas; se toca la pantalla justo cuando la bola cruza el home para conectar sencillos, dobles, triples o jonrones. Una entrada de 3 outs, con conteo de bolas y strikes y corredores en base. Guarda la mejor partida de cada equipo y otorga un **trofeo 3D por equipo** (bronce con 5 carreras, plata con 8 y oro con 12), visible en Galería → Insignias.
 - **Trivia**: trivias de 5 preguntas que otorgan insignias 3D de oro, plata o bronce.
 - **Galería**:
   - *Videos* con filtros de procesamiento de imagen por píxel (desenfoque, pixelado, cámara térmica, ajuste de color, pastel, alta saturación y suavizado).
-  - *Insignias* ganadas en las trivias.
+  - *Insignias*: trofeos de Batazo por equipo e insignias ganadas en las trivias.
   - *Fotos AR*: las fotos tomadas en la Realidad Aumentada, guardadas dentro de la app (IndexedDB), con opción de descargar o borrar.
 - **Realidad Aumentada**: reconoce el logo de cada equipo con MindAR y muestra su modelo 3D (three.js) con acciones de diorama, info, animación, celebración, video, marcador en vivo, sonido y foto.
 - **Créditos y fuentes**: pantalla (menú ☰) con el origen del contenido de terceros.
@@ -43,6 +44,7 @@ y abrir `http://localhost:8000`. La cámara y el service worker requieren `https
 | `data.js`, `trivias.js` | Datos de equipos, jugadores, calendario, videos y trivias |
 | `filters.js` | Motor de video y filtros de procesamiento de imagen |
 | `ar.js`, `ar-libs.js` | Experiencia de Realidad Aumentada |
+| `batazo.js` | Minijuego de bateo (canvas) |
 | `photos.js` | Galería de fotos AR (IndexedDB) |
 | `help.js` | Contenido del botón de ayuda “?” |
 | `badges3d.js`, `sounds.js` | Insignias 3D y sonidos de estadio (WebAudio) |
@@ -58,6 +60,6 @@ y abrir `http://localhost:8000`. La cámara y el service worker requieren `https
 - **Fotografías de noticias y de “¿Quiénes somos?”:** Liga Mexicana de Béisbol y clubes correspondientes.
 - **Videos (YouTube):** EL FANATICO DEL DEPORTE, ESPN MX, Claro Sports, Liga Mexicana de Beisbol Banorte y Niall O'Donohoe (el detalle por video está en la pantalla Créditos de la app).
 - **Librerías:** [three.js](https://threejs.org) r160 (MIT) y [MindAR](https://github.com/hiukim/mind-ar-js) (MIT).
-- **Contenido propio:** modelos 3D de las gorras y el diorama (Javier Peña Reyes); programación, insignias 3D, sonidos WebAudio, trivias, filtros, diseño e interfaz (Derek Alejandro Luna Hernandez).
+- **Contenido propio:** modelos 3D de las gorras y el diorama (Javier Peña Reyes); programación, insignias y trofeos 3D, minijuego Batazo, sonidos WebAudio, trivias, filtros, diseño e interfaz (Derek Alejandro Luna Hernandez).
 
 La documentación completa, con capturas de pantalla, se entrega por separado en PDF.

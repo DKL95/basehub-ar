@@ -768,3 +768,65 @@ button.badge-earned { border: none; cursor: pointer; font-family: inherit; color
 .credits-item ul { margin: 0; padding-left: 18px; }
 .credits-item li { font-size: 13px; line-height: 1.5; margin-bottom: 5px; }
 .credits-item a { color: var(--green-dark); }
+
+/* ---------- Minijuego Batazo ---------- */
+.bz-record { margin: 4px 16px 0; padding: 10px 12px; border-radius: 10px; background: #f3f7ee; font-size: 13px; text-align: center; }
+.bz-teams { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 6px 16px 0; }
+.bz-team {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px;
+  border: 2px solid #e2e2e2; border-radius: 12px; background: #fff; cursor: pointer; font-size: 10px; font-weight: 700;
+}
+.bz-team img { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; background: var(--tc); padding: 3px; }
+.bz-team.active { border-color: var(--green); box-shadow: 0 0 0 2px var(--green) inset; }
+.bz-legend { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.bz-legend div { margin-bottom: 4px; }
+
+.bz-hud { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #111; color: #fff; }
+.bz-score { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.bz-team-score { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bz-team-score img { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; padding: 2px; flex: 0 0 auto; }
+.bz-team-score b { font-size: 26px; font-weight: 900; color: #ffd166; }
+.bz-team-score.rival span { font-size: 11px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bz-vs { font-size: 11px; color: #888; }
+.bz-count { display: flex; align-items: center; gap: 10px; }
+.bz-diamond { position: relative; width: 34px; height: 34px; }
+.bz-diamond span { position: absolute; width: 11px; height: 11px; border: 2px solid #777; transform: rotate(45deg); }
+.bz-diamond span.on { background: #ffd166; border-color: #ffd166; }
+.bz-diamond .b2 { left: 11px; top: 2px; }
+.bz-diamond .b3 { left: 1px; top: 13px; }
+.bz-diamond .b1 { left: 21px; top: 13px; }
+.bz-bso div { display: flex; align-items: center; gap: 3px; height: 11px; font-size: 9px; }
+.bz-bso em { font-style: normal; width: 9px; color: #aaa; font-weight: 700; }
+.bz-bso i { width: 7px; height: 7px; border-radius: 50%; background: #444; }
+.bz-bso i.ball { background: #74c0fc; }
+.bz-bso i.strike { background: #ff9f43; }
+.bz-bso i.out { background: #ff6b6b; }
+.bz-mute { background: none; border: none; font-size: 18px; cursor: pointer; padding: 2px; }
+.bz-canvas-wrap { background: #0b1d3a; line-height: 0; }
+#bzCanvas { width: 100%; height: auto; aspect-ratio: 3 / 4; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; }
+.bz-hint { text-align: center; font-size: 12.5px; color: var(--muted); padding: 8px 16px 0; min-height: 26px; }
+.bz-stats { display: flex; justify-content: center; gap: 22px; margin: 14px 0 6px; font-size: 11.5px; color: var(--muted); }
+.bz-stats div { display: flex; flex-direction: column; }
+.bz-stats b { font-size: 20px; color: var(--text); }
+.bz-over .bz-record { margin: 10px auto 0; max-width: 260px; }
+
+.minigame-card {
+  display: flex; align-items: center; gap: 14px; margin: 18px 16px 0; padding: 14px; border-radius: var(--radius);
+  background: linear-gradient(135deg, #0b1d3a, #24508a); color: #fff;
+}
+.minigame-card .emoji { font-size: 38px; }
+.minigame-card b { font-size: 14px; }
+.minigame-card p { margin: 4px 0 8px; font-size: 12px; color: #cfe0ff; }
+.bz-trophy-note { font-size: 12px; color: var(--muted); line-height: 1.45; margin: 2px 0 6px; }
+.bz-team small { font-size: 9.5px; color: var(--muted); font-weight: 700; }
+.bz-team.tier-oro small, .bz-team.tier-plata small, .bz-team.tier-bronce small { color: var(--tier); }
+.bz-trophy-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; max-width: 320px; margin: 12px auto 0; padding: 10px 12px;
+  border: 1px solid #eee; border-radius: 14px; background: #fafafa; cursor: pointer; font-family: inherit; color: inherit; text-align: left;
+}
+.bz-trophy-info { flex: 1; min-width: 0; font-size: 13px; }
+.bz-trophy-info small { font-size: 11px; color: var(--muted); }
+.bz-trophy-bar { position: relative; height: 8px; background: #e6e6e6; border-radius: 4px; margin: 6px 0 4px; overflow: hidden; }
+.bz-trophy-bar div { height: 100%; background: var(--tier, var(--green)); border-radius: 4px; }
+.bz-trophy-row.tier-bloqueada .bz-trophy-bar div { background: var(--green); }
+.bz-trophy-bar i { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,.25); }

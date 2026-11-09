@@ -105,7 +105,36 @@ function batMesh(locked) {
     new THREE.MeshStandardMaterial({ color: locked ? 0x8d9299 : 0xb5793f, roughness: 0.45, metalness: 0.05 }));
 }
 
-function emblem(type, tier, accent) {
+// Textura circular con el logo del equipo sobre su color. Si el trofeo está
+// bloqueado se pasa a escala de grises píxel por píxel (luminancia Rec. 601).
+function logoTexture(img, color, locked) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const x = c.getContext("2d");
+  x.fillStyle = color || "#333";
+  x.fillRect(0, 0, 256, 256);
+  if (img && img.naturalWidth) {
+    const pad = 34, box = 256 - pad * 2;
+    const k = Math.min(box / img.naturalWidth, box / img.naturalHeight);
+    const w = img.naturalWidth * k, h = img.naturalHeight * k;
+    x.drawImage(img, (256 - w) / 2, (256 - h) / 2, w, h);
+  }
+  if (locked) {
+    try {
+      const d = x.getImageData(0, 0, 256, 256), px = d.data;
+      for (let i = 0; i < px.length; i += 4) {
+        const yv = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        px[i] = px[i + 1] = px[i + 2] = yv * 0.75 + 30;
+      }
+      x.putImageData(d, 0, 0);
+    } catch { /* imagen de otro origen: se deja a color */ }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function emblem(type, tier, accent, opts) {
   const locked = tier === "bloqueada";
   const m = metal(tier);
   const white = new THREE.MeshStandardMaterial({ color: locked ? 0xa5aab0 : 0xf4f4f4, roughness: 0.35 });
@@ -202,6 +231,15 @@ function emblem(type, tier, accent) {
       g.position.set(-0.08, -0.12, 0.1);
       break;
     }
+    case "logo": {
+      // Logo del equipo (trofeos de Batazo): disco con la imagen y un aro de metal.
+      const face = new THREE.Mesh(new THREE.CircleGeometry(0.6, 72),
+        new THREE.MeshStandardMaterial({ map: logoTexture(opts.logoImg, opts.accent, locked), roughness: 0.4, metalness: 0.05 }));
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.61, 0.04, 14, 96), m);
+      g.add(face, ring);
+      g.position.z = 0.1;
+      break;
+    }
     case "bolt":
     default:
       g.add(new THREE.Mesh(extrude(polyShape([[0.12, 0.62], [-0.36, -0.04], [-0.03, -0.04], [-0.16, -0.62], [0.36, 0.1], [0.03, 0.1]]), 0.1, 0.04), m));
@@ -234,10 +272,11 @@ function backTexture(name, tier) {
   return tex;
 }
 
-function buildMedal({ emblem: type, tier, accentIndex, name }) {
+function buildMedal(opts) {
+  const { emblem: type, tier, accentIndex, name } = opts;
   const medal = new THREE.Group();
   const m = metal(tier);
-  const accent = tier === "bloqueada" ? "#3d4147" : ENAMEL[accentIndex % ENAMEL.length];
+  const accent = tier === "bloqueada" ? "#3d4147" : opts.accent || ENAMEL[accentIndex % ENAMEL.length];
 
   const disc = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.16, 96), m);
   disc.rotation.x = Math.PI / 2;
@@ -255,7 +294,7 @@ function buildMedal({ emblem: type, tier, accentIndex, name }) {
   const loop = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.04, 12, 32), m);
   loop.position.y = 1.15;
 
-  medal.add(disc, rim, innerRing, enamel, back, loop, emblem(type, tier, accent));
+  medal.add(disc, rim, innerRing, enamel, back, loop, emblem(type, tier, accent, opts));
   return medal;
 }
 
@@ -274,7 +313,7 @@ function disposeTree(obj) {
 // Devuelve un dataURL PNG de la insignia (en caché por emblema/nivel/color).
 export function thumb(opts, size = 192) {
   init();
-  const key = `${opts.emblem}|${opts.tier}|${opts.accentIndex}|${size}`;
+  const key = `${opts.emblem}|${opts.tier}|${opts.accentIndex}|${opts.logo || ""}|${size}`;
   if (thumbCache.has(key)) return thumbCache.get(key);
   const wasViewing = viewer.open;
   const medal = buildMedal(opts);

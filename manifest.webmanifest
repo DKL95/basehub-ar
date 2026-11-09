@@ -1,7 +1,7 @@
 {
   "name": "Base-Hub | Liga Mexicana de Béisbol",
   "short_name": "Base-Hub",
-  "description": "Noticias, equipos, calendario, trivia y Realidad Aumentada de la Zona Norte de la Liga Mexicana de Béisbol.",
+  "description": "Noticias, equipos, calendario, trivia, minijuego de bateo y Realidad Aumentada de la Zona Norte de la Liga Mexicana de Béisbol.",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",

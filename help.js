@@ -68,6 +68,17 @@ const HELP = {
       "Toca la insignia para verla en 3D, o ve a Galería → Insignias para ver tu colección.",
     ],
   },
+  batazo: {
+    title: "Minijuego: Batazo",
+    steps: [
+      "Elige tu equipo y toca <b>¡A batear!</b>. El pitcher es de un equipo rival al azar.",
+      "Toca el campo (o la barra espaciadora) para hacer swing <b>justo cuando la bola llegue al home</b>. Abajo verás si fuiste temprano o tarde y por cuántos milisegundos.",
+      "Entre mejor tu tiempo, más lejos se va: sencillo, doble, triple o <b>jonrón</b>. Ojo: un elevado lo puede atrapar un jardinero y un rodado débil lo fildea el cuadro (out).",
+      "El recuadro punteado es la zona de strike: si la bola va afuera y no le haces swing es <b>bola</b> (4 bolas = base por bolas). 3 strikes = ponche.",
+      "Hay rectas, sliders, curvas y cambios de velocidad; entre más carreras anotes, más rápido lanza. Con 3 outs se acaba y se guarda tu récord.",
+      "<b>Trofeos:</b> cada equipo tiene su trofeo 3D. Haz 5 carreras en una partida con ese equipo para ganarlo en bronce, 8 para plata y 12 para oro. Se guarda tu mejor partida por equipo y los trofeos aparecen en Galería → Insignias.",
+    ],
+  },
   "galeria:videos": {
     title: "Galería · Videos",
     steps: [
@@ -78,7 +89,8 @@ const HELP = {
   "galeria:insignias": {
     title: "Galería · Insignias",
     steps: [
-      "Tu colección de insignias ganadas en las trivias; la barra verde muestra cuántas llevas.",
+      "Arriba están los <b>trofeos de Batazo</b>, uno por equipo: se ganan haciendo 5 carreras (bronce), 8 (plata) o 12 (oro) en una partida del minijuego.",
+      "Abajo, tu colección de insignias ganadas en las trivias; la barra verde muestra cuántas llevas.",
       "Las insignias con 🔒 todavía no las ganas: tócalas y usa <b>Jugar trivia</b> para ir por ella.",
       "Toca una insignia ganada para verla en 3D; arrástrala para girarla.",
     ],
