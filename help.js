@@ -72,7 +72,7 @@ const HELP = {
     title: "Minijuego: Batazo",
     steps: [
       "Elige tu equipo y toca <b>¡A batear!</b>. El pitcher es de un equipo rival al azar.",
-      "Toca el campo (o la barra espaciadora) para hacer swing <b>justo cuando la bola llegue al home</b>. Abajo verás si fuiste temprano o tarde y por cuántos milisegundos.",
+      "Toca el campo (o la barra espaciadora) para hacer swing <b>justo cuando la bola llegue al home</b>. Abajo verás si fuiste temprano, tarde o perfecto.",
       "Entre mejor tu tiempo, más lejos se va: sencillo, doble, triple o <b>jonrón</b>. Ojo: un elevado lo puede atrapar un jardinero y un rodado débil lo fildea el cuadro (out).",
       "El recuadro punteado es la zona de strike: si la bola va afuera y no le haces swing es <b>bola</b> (4 bolas = base por bolas). 3 strikes = ponche.",
       "Hay rectas, sliders, curvas y cambios de velocidad; entre más carreras anotes, más rápido lanza. Con 3 outs se acaba y se guarda tu récord.",

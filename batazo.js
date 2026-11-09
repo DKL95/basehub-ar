@@ -272,8 +272,7 @@ const Batazo = (() => {
     g.phase = "flight";
     g.flight = { kind, t: performance.now(), dur, fx: 0, fy: 2, tx, ty, peak };
     sound(kind === "hr" ? "homer" : "hit");
-    const label = Math.abs(dt) < 15 ? "¡Perfecto!" : dt < 0 ? "Temprano" : "Tarde";
-    setHint(`${label} (${dt > 0 ? "+" : ""}${Math.round(dt)} ms)`);
+    setHint(Math.abs(dt) < 15 ? "¡Perfecto!" : dt < 0 ? "Un poco temprano" : "Un poco tarde");
   }
 
   function setHint(t) { const h = document.getElementById("bzHint"); if (h) h.textContent = t; }
@@ -354,7 +353,7 @@ const Batazo = (() => {
         showMsg("Base por bolas" + (r ? "  +1" : ""), "#74c0fc", r > 0);
       } else showMsg("Bola", "#74c0fc");
     }
-    if (g.swing?.miss && g.swing.dt !== undefined) setHint(g.swing.dt < 0 ? `Muy temprano (${Math.round(g.swing.dt)} ms)` : `Muy tarde (+${Math.round(g.swing.dt)} ms)`);
+    if (g.swing?.miss && g.swing.dt !== undefined) setHint(g.swing.dt < 0 ? "Muy temprano" : "Muy tarde");
     else if (g.swing?.miss) setHint("Espera a que el pitcher suelte la bola");
     else if (!g.swing) setHint(g.pitch.inZone ? "Esa iba en la zona: ¡hazle swing!" : "Bien visto, iba afuera de la zona");
     updateHud();
